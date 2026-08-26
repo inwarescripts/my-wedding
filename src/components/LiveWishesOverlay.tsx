@@ -71,7 +71,7 @@ export function LiveWishesOverlay({ projectId }: { projectId: string }) {
       className="pointer-events-none absolute bottom-44 left-0 z-10 h-48 w-[62%] max-w-sm overflow-hidden px-3 md:bottom-56 md:left-6 md:h-64 md:w-96 md:px-4"
       aria-hidden
     >
-      <div className="flex h-full flex-col-reverse gap-2">
+      <div className="flex h-full flex-col justify-end gap-2">
         <AnimatePresence initial={false}>
           {visible.map((item) => (
             <motion.div
@@ -81,10 +81,10 @@ export function LiveWishesOverlay({ projectId }: { projectId: string }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, transition: { duration: 1.1, ease: "easeInOut" } }}
               transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
-              className="w-fit max-w-full rounded-full bg-ivory/90 px-2 py-1 text-left shadow-sm backdrop-blur-sm md:px-3 md:py-1.5"
+              className="w-fit max-w-full rounded-full bg-ivory/90 px-2 py-1 text-left leading-none shadow-sm backdrop-blur-sm md:px-3 md:py-1.5"
             >
-              <span className="font-heading text-[11px] italic text-accent md:text-xs">{item.name}: </span>
-              <span className="font-serif text-xs text-ink md:text-sm">{item.message}</span>
+              <span className="font-heading text-xs italic text-accent md:text-sm">{item.name}: </span>
+              <span className="font-serif text-sm text-ink md:text-base">{item.message}</span>
             </motion.div>
           ))}
         </AnimatePresence>
