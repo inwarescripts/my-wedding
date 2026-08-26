@@ -625,7 +625,7 @@ export function ProjectEditor({
             ← Danh sách dự án
           </Link>
           <h1 className="font-heading text-xl italic text-ink">
-            {config.couple.displayName}
+            {projectMeta.name}
           </h1>
         </div>
         <button
