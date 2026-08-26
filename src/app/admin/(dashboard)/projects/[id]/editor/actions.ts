@@ -120,6 +120,13 @@ export async function saveProjectConfig(projectId: string, payload: SaveProjectP
         })),
       });
     }
+  }, {
+    // Default 5s timeout is too tight for this many sequential round-trips
+    // once the app runs further from the DB than local dev (Vercel function
+    // region vs Neon ap-southeast-1) — Prisma was closing the transaction
+    // mid-save and the next query failed with P2028 "Transaction not found".
+    timeout: 20000,
+    maxWait: 10000,
   });
 
   revalidatePath(`/admin/projects/${projectId}/editor`);
