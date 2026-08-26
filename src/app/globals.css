@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+:root {
+  --color-ivory: #f6f1ea;
+  --color-ivory-deep: #efe7db;
+  --color-ink: #2b2621;
+  --color-ink-soft: #55493f;
+  --color-accent: #a9765a;
+  --color-accent-soft: #d8b9a2;
+  --color-line: #e2d6c6;
+  --color-gold: #b08d57;
+
+  --font-heading: "Playfair Display", serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-body: "Be Vietnam Pro", sans-serif;
+  --font-script: "Great Vibes", cursive;
+
+  --section-y: clamp(4rem, 8vw, 7rem);
+}
+
+@theme inline {
+  --color-ivory: var(--color-ivory);
+  --color-ivory-deep: var(--color-ivory-deep);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-line: var(--color-line);
+  --color-gold: var(--color-gold);
+
+  --font-heading: var(--font-heading);
+  --font-serif: var(--font-serif);
+  --font-body: var(--font-body);
+  --font-script: var(--font-script);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+body {
+  background: var(--color-ivory);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-ink);
+}
+
+/* Flat design: hairline borders instead of shadows */
+.card-flat {
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-ivory) 96%, white);
+}
+
+.shadow-flat {
+  box-shadow: 0 1px 2px rgb(43 38 33 / 0.05);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 1.2s ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Ambient overlays (petals/bokeh/sparkle/...) are purely decorative —
+     hide outright rather than let them snap to a static leftover frame. */
+  .ambient-fx {
+    display: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

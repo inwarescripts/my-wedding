@@ -1,0 +1,3022 @@
+# PREMIUM VIETNAMESE WEDDING PLATFORM
+
+## Template Marketplace + Cinematic Wedding Builder
+
+Build a production-quality Vietnamese wedding website platform.
+
+Tech:
+
+* Next.js latest stable
+* TypeScript strict
+* React
+* PostgreSQL
+* Prisma
+* S3-compatible object storage
+* GSAP
+* ScrollTrigger
+* Lenis
+* Three.js
+* React Three Fiber
+* Drei
+* Framer Motion
+* Tailwind CSS
+* Zod
+* Zustand
+* dnd-kit
+
+The product should compete with Vietnamese wedding invitation platforms, but the visual quality should be significantly more cinematic and premium.
+
+Reference:
+
+https://zenlove.me/template-preview/thiep-cuoi-11-pre
+
+Do NOT clone ZenLove.
+
+Use it only as UX/reference for:
+
+* Vietnamese wedding information architecture
+* template preview
+* wedding content
+* event information
+* family information
+* RSVP
+* map
+* QR
+* music
+* sharing
+
+The product must have its own visual identity.
+
+---
+
+# 1. CORE CONCEPT
+
+There are TWO completely different concepts:
+
+## TEMPLATE
+
+A reusable wedding design.
+
+Example:
+
+"Cinematic Rose"
+
+"French Editorial"
+
+"Botanical Love"
+
+"Korean Minimal"
+
+"Film Story"
+
+Template contains:
+
+* theme
+* frames
+* frame configurations
+* animation configurations
+* default content
+* responsive settings
+
+---
+
+## PROJECT
+
+A real wedding website belonging to one couple.
+
+Example:
+
+Project:
+
+Minh & Linh
+
+Project is created from a Template.
+
+Template:
+
+"Cinematic Rose"
+
+↓
+
+Create Project
+
+↓
+
+Clone template configuration
+
+↓
+
+Customize project
+
+↓
+
+Publish
+
+---
+
+# 2. ROUTES
+
+## Public HOME
+
+/
+
+This is NOT a generic SaaS landing page.
+
+It is a:
+
+# WEDDING TEMPLATE MARKETPLACE
+
+The primary content is beautiful wedding templates.
+
+Think:
+
+Pinterest + premium wedding template gallery + cinematic preview.
+
+---
+
+## TEMPLATE PREVIEW
+
+/template/[templateSlug]
+
+Example:
+
+/template/cinematic-rose
+
+This page should feel like the ZenLove preview page concept, but much more premium.
+
+It shows:
+
+* template hero
+* screenshots
+* live preview
+* mobile preview
+* animation preview
+* section list
+* template information
+* "Sử dụng mẫu này"
+
+---
+
+## PUBLIC WEDDING
+
+/wedding/[projectSlug]
+
+Example:
+
+/wedding/minh-linh
+
+This is the actual wedding website.
+
+---
+
+## ADMIN
+
+/admin
+
+Development credentials:
+
+username:
+
+admin
+
+password:
+
+admin
+
+Production MUST require secure credentials.
+
+---
+
+## ADMIN PROJECT
+
+/admin/projects
+
+/admin/projects/[projectId]
+
+/admin/projects/[projectId]/editor
+
+/admin/projects/[projectId]/assets
+
+/admin/projects/[projectId]/audio
+
+/admin/projects/[projectId]/settings
+
+/admin/projects/[projectId]/rsvp
+
+---
+
+# 3. HOME PAGE
+
+The homepage should immediately show wedding templates.
+
+Hero:
+
+"Những câu chuyện tình yêu
+được kể bằng hình ảnh."
+
+Subheading:
+
+"Tạo website cưới riêng cho ngày đặc biệt của bạn."
+
+But do not make the hero too marketing-heavy.
+
+Below:
+
+## FEATURED TEMPLATES
+
+Large cinematic cards.
+
+Each card:
+
+* full-bleed wedding image
+* template name
+* category
+* subtle hover animation
+* preview button
+* use template button
+
+---
+
+# 4. TEMPLATE CARD ANIMATION
+
+Desktop hover:
+
+Image scale 1 → 1.04
+
+Foreground image moves slightly.
+
+Typography reveals.
+
+Overlay gradient.
+
+Small metadata appears.
+
+Cursor interaction.
+
+Do NOT use generic card hover.
+
+Use:
+
+GSAP
+
+or CSS transform where sufficient.
+
+---
+
+# 5. TEMPLATE FILTERS
+
+Categories:
+
+Romantic
+
+Cinematic
+
+Minimal
+
+Editorial
+
+Botanical
+
+Luxury
+
+Korean
+
+Modern
+
+Traditional
+
+3D
+
+Film
+
+---
+
+# 6. TEMPLATE PREVIEW
+
+Template preview should be immersive.
+
+Desktop:
+
+left:
+
+template information
+
+right:
+
+large website preview
+
+or:
+
+full-screen preview.
+
+Mobile:
+
+mobile phone frame.
+
+Buttons:
+
+"Xem toàn màn hình"
+
+"Xem trên điện thoại"
+
+"Sử dụng mẫu này"
+
+---
+
+# 7. TEMPLATE LIVE PREVIEW
+
+Do not create fake screenshots.
+
+Render the actual template using:
+
+WeddingRenderer.
+
+Template preview should use the same renderer as the real wedding.
+
+Architecture:
+
+Template
+
+↓
+
+WeddingRenderer
+
+↓
+
+Preview
+
+Project
+
+↓
+
+WeddingRenderer
+
+↓
+
+Public website
+
+ONE renderer.
+
+---
+
+# 8. TEMPLATE DATA
+
+Template:
+
+id
+
+slug
+
+name
+
+description
+
+category
+
+thumbnail
+
+previewImage
+
+status
+
+themeId
+
+createdAt
+
+updatedAt
+
+---
+
+# 9. TEMPLATE CONFIGURATION
+
+Template stores:
+
+theme
+
+frames
+
+default animations
+
+responsive settings
+
+default assets
+
+default text
+
+default gallery configuration
+
+---
+
+# 10. PROJECT
+
+Project:
+
+id
+
+slug
+
+name
+
+templateId
+
+status
+
+createdAt
+
+updatedAt
+
+publishedAt
+
+---
+
+# 11. COUPLE
+
+Couple:
+
+projectId
+
+groomName
+
+brideName
+
+displayName
+
+weddingDate
+
+weddingDateLunar
+
+coverImage
+
+description
+
+quote
+
+---
+
+# 12. FRAME SYSTEM
+
+A Project can contain MANY frames.
+
+Example:
+
+Project:
+
+Minh & Linh
+
+Frames:
+
+01 Opening
+
+02 Hero
+
+03 Our Story
+
+04 First Date
+
+05 Photo Gallery
+
+06 Timeline
+
+07 Family
+
+08 Wedding Events
+
+09 Countdown
+
+10 Venue
+
+11 RSVP
+
+12 Guest Book
+
+13 Final
+
+---
+
+# 13. FRAME MODEL
+
+Frame:
+
+id
+
+projectId
+
+type
+
+name
+
+order
+
+enabled
+
+content JSONB
+
+style JSONB
+
+animation JSONB
+
+responsive JSONB
+
+metadata JSONB
+
+createdAt
+
+updatedAt
+
+---
+
+# 14. FRAME CONTENT
+
+Content depends on frame type.
+
+Example HERO:
+
+{
+"title": "Minh & Linh",
+"subtitle": "Our Wedding",
+"date": "18.10.2026",
+"image": "asset-id"
+}
+
+---
+
+# 15. FRAME ANIMATION
+
+Every frame can have its own animation.
+
+Example:
+
+{
+"entrance": {
+"type": "cinematicReveal",
+"duration": 1.4,
+"delay": 0,
+"ease": "power3.out"
+},
+
+"scroll": {
+"type": "parallax",
+"intensity": 0.35,
+"scrub": true
+},
+
+"exit": {
+"type": "fadeScale",
+"duration": 1
+}
+}
+
+---
+
+# 16. ADVANCED ANIMATION CONFIG
+
+Animation configuration should support:
+
+opacity
+
+x
+
+y
+
+z
+
+scale
+
+scaleX
+
+scaleY
+
+rotation
+
+rotationX
+
+rotationY
+
+rotationZ
+
+skewX
+
+skewY
+
+blur
+
+brightness
+
+contrast
+
+saturate
+
+hueRotate
+
+perspective
+
+transformOrigin
+
+clipPath
+
+mask
+
+filter
+
+blendMode
+
+parallax
+
+velocity
+
+scrub
+
+pin
+
+stagger
+
+delay
+
+duration
+
+ease
+
+---
+
+# 17. ANIMATION PRESETS
+
+Create a central registry.
+
+Presets:
+
+fade
+
+fadeUp
+
+fadeDown
+
+fadeLeft
+
+fadeRight
+
+scaleIn
+
+scaleOut
+
+zoomIn
+
+zoomOut
+
+blurReveal
+
+maskReveal
+
+clipReveal
+
+splitText
+
+wordReveal
+
+characterReveal
+
+imageReveal
+
+parallax
+
+slowZoom
+
+photoDrift
+
+cinematic
+
+film
+
+depth
+
+3dPhoto
+
+stack
+
+horizontal
+
+displacement
+
+lightSweep
+
+grainReveal
+
+---
+
+# 18. CSS + GSAP HYBRID
+
+Use the most efficient technology for each animation.
+
+Simple:
+
+CSS transform
+
+CSS opacity
+
+CSS transition
+
+CSS keyframes
+
+Complex:
+
+GSAP
+
+ScrollTrigger
+
+WebGL
+
+Three.js
+
+Do NOT use JavaScript for animations that CSS can handle.
+
+---
+
+# 19. MODERN CSS ANIMATION
+
+Use modern CSS where appropriate:
+
+transform
+
+translate
+
+scale
+
+rotate
+
+opacity
+
+filter
+
+clip-path
+
+mask-image
+
+view-timeline where browser support is safe
+
+scroll-driven animation where appropriate
+
+CSS containment
+
+will-change only when justified.
+
+Fallback to GSAP for compatibility and precise control.
+
+---
+
+# 20. SCROLL ANIMATION ENGINE
+
+Use:
+
+Lenis
+
+*
+
+GSAP ScrollTrigger
+
+The engine must support:
+
+scroll reveal
+
+parallax
+
+scrub
+
+pin
+
+horizontal scroll
+
+velocity
+
+section transitions
+
+camera movement
+
+---
+
+# 21. FRAME TIMELINE
+
+Each frame may have a timeline.
+
+Example:
+
+0.0
+
+photo opacity 0
+
+0.3
+
+photo opacity 1
+
+0.5
+
+photo scale 1.08
+
+1.5
+
+photo scale 1
+
+0.8
+
+title reveal
+
+1.5
+
+date reveal
+
+2.5
+
+transition
+
+---
+
+# 22. TIMELINE CONFIGURATION
+
+Support:
+
+timeline:
+
+[
+{
+"target": "hero-image",
+"at": 0,
+"duration": 1.8,
+"properties": {
+"opacity": 1,
+"scale": 1
+}
+}
+]
+
+But create a clean abstraction.
+
+Do not expose raw GSAP code to the database.
+
+---
+
+# 23. ANIMATION REGISTRY
+
+Database stores:
+
+"cinematicReveal"
+
+NOT:
+
+javascript code.
+
+Registry maps:
+
+cinematicReveal
+
+→
+
+actual animation implementation.
+
+This keeps the system secure and maintainable.
+
+---
+
+# 24. MULTIPLE IMAGE UPLOAD
+
+Admin must support uploading MANY images at once.
+
+Example:
+
+Upload 50 wedding photos.
+
+Features:
+
+* drag/drop
+* multiple files
+* progress
+* preview
+* cancel
+* retry
+* failed upload handling
+* reorder
+* delete
+* select multiple
+
+---
+
+# 25. S3 STORAGE
+
+ALL media assets must be stored in S3-compatible storage.
+
+Do NOT store images directly in PostgreSQL.
+
+PostgreSQL stores metadata.
+
+Example:
+
+Asset:
+
+id
+
+projectId
+
+storageProvider
+
+bucket
+
+key
+
+url
+
+width
+
+height
+
+mimeType
+
+size
+
+blurHash
+
+metadata
+
+createdAt
+
+---
+
+# 26. S3 UPLOAD ARCHITECTURE
+
+Use presigned upload URLs.
+
+Flow:
+
+Browser
+
+↓
+
+request upload URL
+
+↓
+
+backend
+
+↓
+
+S3 presigned URL
+
+↓
+
+browser uploads directly to S3
+
+↓
+
+backend confirms asset
+
+This prevents the Next.js server from becoming an image proxy.
+
+---
+
+# 27. IMAGE PROCESSING
+
+After upload:
+
+original
+
+↓
+
+large
+
+medium
+
+small
+
+thumbnail
+
+LQIP / BlurHash
+
+AVIF
+
+WebP
+
+Strip EXIF.
+
+---
+
+# 28. IMAGE GALLERY
+
+Gallery frame should support:
+
+multiple assets.
+
+Example:
+
+{
+"layout": "masonry",
+"items": [
+"asset-1",
+"asset-2",
+"asset-3"
+]
+}
+
+---
+
+# 29. GALLERY DRAG & DROP
+
+Admin can:
+
+drag image
+
+reorder image
+
+delete image
+
+replace image
+
+crop image
+
+set focal point
+
+---
+
+# 30. IMAGE FOCAL POINT
+
+Each image should support:
+
+focalX
+
+focalY
+
+This allows:
+
+object-position
+
+or WebGL camera framing.
+
+Useful for mobile.
+
+---
+
+# 31. IMAGE FRAME SETTINGS
+
+Each image can configure:
+
+position
+
+scale
+
+rotation
+
+crop
+
+objectFit
+
+objectPosition
+
+brightness
+
+contrast
+
+saturation
+
+blur
+
+border
+
+radius
+
+shadow
+
+---
+
+# 32. 3D IMAGE FRAME
+
+Optional:
+
+Three.js.
+
+Each photo may become a 3D plane.
+
+Settings:
+
+depth
+
+rotation
+
+perspective
+
+cameraDistance
+
+parallax
+
+hover
+
+scroll
+
+---
+
+# 33. THREE.JS
+
+Do NOT initialize Three.js globally by default.
+
+Load only when a frame requires 3D.
+
+Use dynamic import.
+
+Mobile may use simplified mode.
+
+---
+
+# 34. WEBGL FALLBACK
+
+If:
+
+WebGL unavailable
+
+↓
+
+render CSS version.
+
+If:
+
+mobile low-performance
+
+↓
+
+disable expensive effects.
+
+Never show broken canvas.
+
+---
+
+# 35. AUDIO
+
+Project supports multiple audio tracks.
+
+AudioTrack:
+
+id
+
+projectId
+
+assetId
+
+title
+
+artist
+
+enabled
+
+autoplay
+
+loop
+
+volume
+
+fadeIn
+
+fadeOut
+
+startAt
+
+---
+
+# 36. AUDIO PLAYER
+
+Custom minimal player.
+
+Example:
+
+♫
+
+"Music"
+
+When playing:
+
+animated icon.
+
+Controls:
+
+play
+
+pause
+
+volume
+
+mute.
+
+No browser default player.
+
+---
+
+# 37. AUDIO AUTOPLAY
+
+Must respect browser autoplay policy.
+
+On first user interaction:
+
+start music.
+
+If autoplay blocked:
+
+show:
+
+"Chạm để mở câu chuyện"
+
+---
+
+# 38. AUDIO S3
+
+Audio files also stored in S3.
+
+PostgreSQL stores metadata.
+
+Support:
+
+mp3
+
+m4a
+
+wav
+
+---
+
+# 39. MAP
+
+Wedding event can have:
+
+Google Maps URL
+
+Google Maps embed
+
+coordinates
+
+address
+
+venue
+
+navigation URL.
+
+---
+
+# 40. MAP FRAME
+
+Map frame settings:
+
+provider
+
+latitude
+
+longitude
+
+zoom
+
+address
+
+label
+
+theme
+
+---
+
+# 41. QR CODE
+
+Support QR generation for:
+
+Google Maps
+
+Bank transfer
+
+Wedding gift
+
+RSVP
+
+Custom URL
+
+QR image should be generated dynamically.
+
+Store QR config, not necessarily the generated image.
+
+---
+
+# 42. VIETNAMESE WEDDING GIFT
+
+Support:
+
+Bank name
+
+Account name
+
+Account number
+
+Bank QR
+
+Message:
+
+"Mừng cưới"
+
+QR code.
+
+Make this optional.
+
+---
+
+# 43. EVENTS
+
+Multiple wedding events.
+
+Each event:
+
+name
+
+date
+
+time
+
+lunarDate
+
+venue
+
+address
+
+latitude
+
+longitude
+
+mapUrl
+
+description
+
+icon
+
+---
+
+# 44. COUNTDOWN
+
+Countdown based on:
+
+weddingDate
+
+timezone:
+
+Asia/Ho_Chi_Minh
+
+---
+
+# 45. LUNAR DATE
+
+Vietnamese lunar date support.
+
+Example:
+
+"Ngày 18 tháng 10 năm 2026"
+
+"Ngày 09 tháng 09 năm Bính Ngọ"
+
+Do not hard-code.
+
+---
+
+# 46. FAMILY
+
+Support:
+
+Groom family
+
+Bride family
+
+Parents
+
+Grandparents
+
+Optional display.
+
+---
+
+# 47. RSVP
+
+Fields configurable.
+
+Default:
+
+name
+
+phone
+
+attending
+
+guestCount
+
+message
+
+dietary
+
+---
+
+# 48. GUESTBOOK
+
+Guest messages.
+
+Moderation:
+
+pending
+
+approved
+
+hidden
+
+---
+
+# 49. PROJECT SETTINGS
+
+Project settings:
+
+theme
+
+music
+
+language
+
+timezone
+
+SEO
+
+social share
+
+custom CSS only for developer/admin if needed
+
+custom domain
+
+analytics
+
+privacy
+
+---
+
+# 50. RESPONSIVE
+
+Breakpoints:
+
+320
+
+375
+
+390
+
+430
+
+768
+
+1024
+
+1280
+
+1440
+
+1920
+
+Do NOT simply scale desktop.
+
+Mobile is a first-class design.
+
+---
+
+# 51. MOBILE ANIMATION
+
+Each animation config supports:
+
+desktop
+
+tablet
+
+mobile.
+
+Example:
+
+{
+"desktop": {
+"enabled": true,
+"intensity": 1
+},
+"mobile": {
+"enabled": true,
+"intensity": 0.35
+}
+}
+
+---
+
+# 52. ADMIN EDITOR
+
+Three-column layout.
+
+LEFT:
+
+Frame list.
+
+CENTER:
+
+live preview.
+
+RIGHT:
+
+configuration.
+
+---
+
+# 53. FRAME LIST
+
+Example:
+
+01 Opening
+
+02 Hero
+
+03 Our Story
+
+04 Gallery
+
+05 Timeline
+
+06 Events
+
+07 Family
+
+08 Countdown
+
+09 Map
+
+10 RSVP
+
+11 Guest Book
+
+12 Gift
+
+13 Final
+
+---
+
+# 54. FRAME OPERATIONS
+
+Add
+
+Delete
+
+Duplicate
+
+Enable/disable
+
+Reorder
+
+Rename
+
+---
+
+# 55. FRAME SETTINGS
+
+Tabs:
+
+Content
+
+Media
+
+Layout
+
+Style
+
+Animation
+
+Responsive
+
+Advanced
+
+---
+
+# 56. ANIMATION EDITOR
+
+Admin can select:
+
+Entrance
+
+Scroll
+
+Exit
+
+Transition.
+
+Then:
+
+preset
+
+duration
+
+delay
+
+ease
+
+intensity
+
+stagger
+
+parallax
+
+3D.
+
+---
+
+# 57. VISUAL TIMELINE
+
+Build a lightweight visual timeline.
+
+Not full After Effects.
+
+It should allow:
+
+drag timing
+
+duration
+
+delay
+
+preview
+
+restart
+
+---
+
+# 58. LIVE PREVIEW
+
+Any change should immediately update preview.
+
+Use local editor state.
+
+Debounced persistence.
+
+Do not reload iframe/page after every change.
+
+---
+
+# 59. PREVIEW ARCHITECTURE
+
+Important:
+
+The editor preview must use the SAME WeddingRenderer as production.
+
+Architecture:
+
+ProjectConfig
+
+↓
+
+WeddingRenderer
+
+↓
+
+Public
+
+OR
+
+↓
+
+EditorPreview
+
+---
+
+# 60. PROJECT CONFIG
+
+Everything should be serializable.
+
+Project configuration:
+
+couple
+
+theme
+
+frames
+
+audio
+
+events
+
+gallery
+
+map
+
+qr
+
+rsvp
+
+settings
+
+---
+
+# 61. DATABASE JSONB
+
+Use JSONB for flexible visual configuration.
+
+But relational tables for:
+
+Project
+
+User
+
+Asset
+
+Frame
+
+Audio
+
+Event
+
+RSVP
+
+Guest
+
+Template
+
+Domain
+
+Do not put the entire database into one giant JSON field.
+
+---
+
+# 62. TEMPLATE CREATION
+
+Admin can create:
+
+Template.
+
+Template has:
+
+theme
+
+frames
+
+animation configs
+
+default content
+
+sample assets.
+
+---
+
+# 63. CREATE PROJECT FROM TEMPLATE
+
+When user chooses template:
+
+clone:
+
+template theme
+
+template frames
+
+template animation settings
+
+template responsive settings.
+
+DO NOT share mutable frame rows between template and project.
+
+---
+
+# 64. TEMPLATE ASSETS
+
+Template assets may be:
+
+global
+
+or copied into project.
+
+Use references carefully.
+
+A project must not break if template changes.
+
+---
+
+# 65. TEMPLATE VERSIONING
+
+Template:
+
+version
+
+1.0
+
+1.1
+
+2.0
+
+Project created from template stores:
+
+templateVersion.
+
+---
+
+# 66. HOME PAGE DATA
+
+Homepage fetches:
+
+published templates.
+
+Sort:
+
+featured
+
+popular
+
+new
+
+premium
+
+---
+
+# 67. TEMPLATE PREVIEW DATA
+
+Each template has:
+
+thumbnail
+
+cover
+
+preview images
+
+live preview configuration
+
+category
+
+tags
+
+---
+
+# 68. TEMPLATE PREVIEW EXPERIENCE
+
+At:
+
+/template/[slug]
+
+Show:
+
+large hero
+
+template name
+
+description
+
+categories
+
+live preview
+
+sections included
+
+animation highlights
+
+mobile preview
+
+"Chọn mẫu này"
+
+---
+
+# 69. TEMPLATE PREVIEW ANIMATION
+
+The preview itself should demonstrate animation.
+
+For example:
+
+Scroll inside preview.
+
+Or:
+
+play cinematic demo.
+
+Do not show static screenshot only.
+
+---
+
+# 70. HOME PAGE PERFORMANCE
+
+Homepage may contain many templates.
+
+Use:
+
+thumbnail images
+
+lazy loading
+
+virtualization if needed.
+
+Do NOT load full-resolution wedding images for every template.
+
+---
+
+# 71. ADMIN TEMPLATE MANAGEMENT
+
+/admin/templates
+
+Actions:
+
+Create
+
+Edit
+
+Duplicate
+
+Preview
+
+Publish
+
+Unpublish
+
+Delete
+
+---
+
+# 72. ADMIN ASSET MANAGEMENT
+
+/admin/assets
+
+Filter:
+
+image
+
+video
+
+audio
+
+QR
+
+---
+
+# 73. S3 FOLDER STRUCTURE
+
+Use predictable keys:
+
+projects/{projectId}/images/original/{assetId}
+
+projects/{projectId}/images/large/{assetId}
+
+projects/{projectId}/images/medium/{assetId}
+
+projects/{projectId}/images/thumb/{assetId}
+
+projects/{projectId}/audio/{assetId}
+
+projects/{projectId}/video/{assetId}
+
+templates/{templateId}/...
+
+---
+
+# 74. PUBLIC ASSET DELIVERY
+
+Use CDN.
+
+Never expose S3 private credentials.
+
+Prefer signed URLs for private assets.
+
+Public published assets can use CDN/public delivery.
+
+---
+
+# 75. SECURITY
+
+Validate:
+
+file type
+
+file size
+
+extension
+
+MIME
+
+dimensions.
+
+Prevent:
+
+SVG XSS
+
+malicious files
+
+oversized uploads.
+
+---
+
+# 76. FRONTEND COMPONENT ARCHITECTURE
+
+src/
+
+app/
+
+components/
+
+sections/
+
+motion/
+
+three/
+
+editor/
+
+templates/
+
+themes/
+
+features/
+
+lib/
+
+server/
+
+db/
+
+schemas/
+
+types/
+
+---
+
+# 77. MOTION ARCHITECTURE
+
+src/motion/
+
+engine
+
+presets
+
+registry
+
+scroll
+
+transitions
+
+text
+
+image
+
+parallax
+
+---
+
+# 78. THREE ARCHITECTURE
+
+src/three/
+
+Scene
+
+Camera
+
+PhotoPlane
+
+PhotoStack
+
+Particles
+
+Materials
+
+Shaders
+
+PostProcessing
+
+---
+
+# 79. WEDDING RENDERER
+
+Create:
+
+WeddingRenderer
+
+It receives:
+
+project configuration.
+
+It should render:
+
+frames in order.
+
+Frame type decides component.
+
+Example:
+
+Frame type:
+
+hero
+
+→
+
+HeroFrame
+
+Frame type:
+
+gallery
+
+→
+
+GalleryFrame
+
+Frame type:
+
+map
+
+→
+
+MapFrame
+
+---
+
+# 80. FRAME REGISTRY
+
+Create:
+
+frameRegistry.
+
+Example:
+
+hero
+
+story
+
+gallery
+
+timeline
+
+event
+
+map
+
+countdown
+
+rsvp
+
+guestbook
+
+gift
+
+video
+
+quote
+
+photo
+
+final
+
+---
+
+# 81. FRAME EXTENSIBILITY
+
+New frame types can be added without changing the entire renderer.
+
+---
+
+# 82. ANIMATION REGISTRY
+
+Same principle.
+
+New animation can be added without changing database schema.
+
+---
+
+# 83. CSS VARIABLES
+
+Theme should use CSS variables.
+
+Example:
+
+--color-background
+
+--color-text
+
+--color-accent
+
+--font-heading
+
+--font-body
+
+--font-script
+
+--spacing-section
+
+--radius
+
+---
+
+# 84. TYPOGRAPHY
+
+Vietnamese wedding fonts.
+
+Primary:
+
+Cormorant Garamond
+
+Playfair Display
+
+Bodoni Moda
+
+Body:
+
+Be Vietnam Pro
+
+Manrope
+
+Inter
+
+Script:
+
+Allura
+
+Great Vibes
+
+Parisienne
+
+Must verify Vietnamese glyph support.
+
+---
+
+# 85. VISUAL QUALITY
+
+Target:
+
+Luxury wedding photography website.
+
+Not:
+
+generic invitation.
+
+Not:
+
+Canva.
+
+Not:
+
+WordPress.
+
+Not:
+
+dashboard.
+
+Not:
+
+cheap template.
+
+---
+
+# 86. ANIMATION QUALITY
+
+Animation must feel:
+
+slow
+
+smooth
+
+organic
+
+cinematic
+
+expensive.
+
+Use:
+
+power3.out
+
+power4.out
+
+expo.out
+
+custom easing.
+
+Avoid excessive:
+
+bounce
+
+elastic
+
+overshoot.
+
+---
+
+# 87. PERFORMANCE
+
+Target:
+
+LCP < 2.5 sec
+
+CLS < 0.1
+
+INP < 200ms
+
+Use:
+
+Next Image
+
+AVIF
+
+WebP
+
+lazy loading
+
+dynamic imports
+
+code splitting
+
+S3 CDN
+
+---
+
+# 88. WEBGL PERFORMANCE
+
+Adaptive:
+
+DPR
+
+particle count
+
+shader complexity
+
+postprocessing.
+
+Mobile:
+
+lower DPR
+
+fewer particles
+
+no expensive DOF if unnecessary.
+
+---
+
+# 89. AUDIO PERFORMANCE
+
+Do not preload huge audio files unnecessarily.
+
+Load on interaction.
+
+---
+
+# 90. PUBLIC PAGE CACHE
+
+Published project should be cacheable.
+
+Admin draft must NOT affect public production page until publish.
+
+---
+
+# 91. PUBLISHING
+
+Draft:
+
+editable.
+
+Published:
+
+stable snapshot.
+
+Publish:
+
+create revision
+
+invalidate cache
+
+update public page.
+
+---
+
+# 92. PREVIEW
+
+Preview unpublished project:
+
+/preview/[projectId]
+
+Only authorized users.
+
+---
+
+# 93. SEO
+
+Generate:
+
+title
+
+description
+
+OG image
+
+canonical
+
+JSON-LD
+
+WeddingEvent.
+
+---
+
+# 94. SOCIAL SHARING
+
+Zalo/Facebook/Messenger preview must show:
+
+Couple
+
+Photo
+
+Wedding date.
+
+---
+
+# 95. CUSTOM DOMAIN
+
+Architecture ready for:
+
+minhlinh.wedding.vn
+
+minhlinh.vn
+
+---
+
+# 96. ANALYTICS
+
+Track:
+
+page_view
+
+scroll
+
+gallery
+
+audio
+
+map
+
+rsvp
+
+share
+
+guestbook
+
+---
+
+# 97. ADMIN DASHBOARD
+
+Dashboard:
+
+Projects
+
+Templates
+
+Storage
+
+Views
+
+RSVP
+
+---
+
+# 98. PROJECT DETAIL
+
+Show:
+
+Couple
+
+Template
+
+Status
+
+Views
+
+Storage
+
+RSVP
+
+Published date
+
+Last edited
+
+---
+
+# 99. PROJECT ACTIONS
+
+Edit
+
+Preview
+
+Publish
+
+Duplicate
+
+Delete
+
+---
+
+# 100. DUPLICATE PROJECT
+
+Duplicate project should:
+
+clone configuration
+
+NOT duplicate huge media files unnecessarily.
+
+Reference assets where appropriate.
+
+---
+
+# 101. MULTI-PROJECT
+
+One admin/user can manage:
+
+many wedding projects.
+
+---
+
+# 102. DEFAULT DEVELOPMENT ACCOUNT
+
+Seed:
+
+admin/admin
+
+Show development warning.
+
+Production:
+
+require secure environment variables.
+
+---
+
+# 103. SAMPLE PROJECT
+
+Seed:
+
+Minh & Linh.
+
+Use realistic Vietnamese wedding content.
+
+Include:
+
+* bride
+* groom
+* parents
+* story
+* 20 sample photos
+* wedding events
+* venue
+* map
+* countdown
+* RSVP
+* QR
+* audio
+* guest book.
+
+Use placeholder/sample assets that can easily be replaced.
+
+---
+
+# 104. FIRST TEMPLATE
+
+Build:
+
+"Cinematic Love"
+
+Style:
+
+ivory
+
+warm
+
+editorial
+
+romantic
+
+cinematic.
+
+Frames:
+
+Opening
+
+Hero
+
+Story
+
+Photo Stack
+
+Gallery
+
+Timeline
+
+Family
+
+Events
+
+Countdown
+
+Map
+
+RSVP
+
+Guestbook
+
+Gift
+
+Final.
+
+---
+
+# 105. ADMIN EDITOR QUALITY
+
+The editor itself should feel premium.
+
+Micro interactions.
+
+Smooth panel transitions.
+
+Command shortcuts where useful.
+
+Undo/redo.
+
+Autosave.
+
+Preview.
+
+---
+
+# 106. DRAG AND DROP
+
+Use dnd-kit.
+
+Support:
+
+frame reorder
+
+gallery reorder
+
+image reorder.
+
+Do not make every UI element draggable.
+
+---
+
+# 107. MULTIPLE IMAGE UPLOAD UX
+
+Drag 30 photos.
+
+Show:
+
+upload queue
+
+progress
+
+thumbnail
+
+success
+
+failure
+
+retry.
+
+After upload:
+
+automatically add to asset library.
+
+---
+
+# 108. IMAGE SELECTION
+
+When configuring gallery:
+
+open asset picker.
+
+Support:
+
+multi-select.
+
+Search.
+
+Filter.
+
+Recently uploaded.
+
+---
+
+# 109. MAP CONFIGURATION
+
+Admin form:
+
+Venue name
+
+Address
+
+Lat
+
+Lng
+
+Google Maps URL
+
+Zoom
+
+Map style.
+
+---
+
+# 110. QR CONFIGURATION
+
+QR types:
+
+MAP
+
+BANK
+
+URL
+
+RSVP
+
+CUSTOM
+
+Generate QR preview immediately.
+
+---
+
+# 111. AUDIO CONFIGURATION
+
+Select audio from asset library.
+
+Configure:
+
+volume
+
+loop
+
+autoplay
+
+fade.
+
+---
+
+# 112. PROJECT SETTINGS
+
+Settings:
+
+Couple
+
+Domain
+
+SEO
+
+Music
+
+Theme
+
+Analytics
+
+Privacy
+
+Sharing.
+
+---
+
+# 113. FRONTEND EXPERIENCE
+
+The public website must have:
+
+no admin UI
+
+no template chrome
+
+no unnecessary buttons.
+
+Only wedding experience.
+
+---
+
+# 114. FINAL USER FLOW
+
+HOME
+
+↓
+
+Browse templates
+
+↓
+
+Open template
+
+↓
+
+Watch live preview
+
+↓
+
+Click:
+
+"Chọn mẫu này"
+
+↓
+
+Create Project
+
+↓
+
+Enter:
+
+Cô dâu
+
+Chú rể
+
+Ngày cưới
+
+↓
+
+Upload photos
+
+↓
+
+Choose music
+
+↓
+
+Edit frames
+
+↓
+
+Preview
+
+↓
+
+Publish
+
+↓
+
+/wedding/minh-linh
+
+---
+
+# 115. MOST IMPORTANT REQUIREMENT
+
+Do not create a normal website builder.
+
+Create:
+
+# CINEMATIC WEDDING EXPERIENCE ENGINE
+
+The system should make it possible to create websites that feel like:
+
+wedding film
+
+photo editorial
+
+interactive album
+
+luxury invitation
+
+all combined.
+
+---
+
+# 116. DEVELOPMENT
+
+Start by inspecting repository.
+
+Then:
+
+PHASE 1
+
+Project setup
+
+PostgreSQL
+
+Prisma
+
+Auth
+
+S3
+
+Asset system
+
+Template system
+
+---
+
+PHASE 2
+
+Home template marketplace
+
+Template preview
+
+---
+
+PHASE 3
+
+WeddingRenderer
+
+Frames
+
+Themes
+
+---
+
+PHASE 4
+
+Animation engine
+
+GSAP
+
+Lenis
+
+CSS animation
+
+---
+
+PHASE 5
+
+Three.js
+
+3D photos
+
+Photo stack
+
+---
+
+PHASE 6
+
+Admin
+
+Project management
+
+---
+
+PHASE 7
+
+Editor
+
+Drag/drop
+
+Animation editor
+
+---
+
+PHASE 8
+
+Audio
+
+Map
+
+QR
+
+RSVP
+
+Guestbook
+
+---
+
+PHASE 9
+
+Publishing
+
+SEO
+
+OG
+
+Caching
+
+---
+
+PHASE 10
+
+Performance
+
+Mobile
+
+Accessibility
+
+Security
+
+---
+
+# 117. QUALITY GATE
+
+Every phase:
+
+run lint
+
+run typecheck
+
+run tests
+
+run build.
+
+No broken build.
+
+No placeholder TODO.
+
+No fake buttons.
+
+No mock functionality where production functionality is expected.
+
+---
+
+# 118. FINAL QUALITY BAR
+
+Open the final wedding page on an iPhone.
+
+It should feel like:
+
+"một bộ phim cưới."
+
+Not:
+
+"một trang web thiệp cưới."
+
+The customer should be willing to pay:
+
+1.000.000 VNĐ
+
+because of the visual experience.
+
+BUILD THE ACTUAL PRODUCT.
+
+Do not stop at a mockup.

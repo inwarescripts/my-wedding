@@ -1,0 +1,194 @@
+// WEDDING — Database schema (minimal slice: matches the current single-project demo)
+// One Project = one couple's wedding site. No Template/marketplace/Admin models yet —
+// add those in a later pass when the multi-project/admin phase actually starts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStatus {
+  draft
+  published
+}
+
+enum RsvpAttending {
+  yes
+  no
+}
+
+enum GuestbookStatus {
+  pending
+  approved
+  hidden
+}
+
+enum UserRole {
+  admin
+  editor
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(editor)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  projects Project[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  name        String
+  status      ProjectStatus @default(draft)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  publishedAt DateTime?
+  // Site-wide visual settings that don't belong to one frame: typography
+  // animation variant, background music. See src/types/wedding-config.ts.
+  settings    Json?
+
+  // Nullable so pre-existing rows (created before ownership existed) don't
+  // break; SetNull on delete so removing a user doesn't cascade-delete the
+  // wedding sites they built — the project just becomes unowned (admin-only).
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  couple    Couple?
+  frames    Frame[]
+  assets    Asset[]
+  events    Event[]
+  rsvps     RsvpEntry[]
+  guestbook GuestbookEntry[]
+  gifts     GiftAccount[]
+
+  @@map("projects")
+}
+
+model Couple {
+  id               String   @id @default(cuid())
+  projectId        String   @unique
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  groomName        String
+  brideName        String
+  displayName      String
+  weddingDate      DateTime
+  weddingDateLunar String?
+  coverImage       String?
+  quote            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("couples")
+}
+
+model Frame {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type       String
+  order      Int
+  enabled    Boolean  @default(true)
+  content    Json
+  style      Json?
+  animation  Json?
+  responsive Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // No unique([projectId, order]): the editor reassigns every frame's order
+  // sequentially on save, which would collide mid-transaction against a
+  // uniqueness constraint (row N+1 briefly holds row N's old order).
+  @@map("frames")
+}
+
+enum AssetStatus {
+  pending
+  uploaded
+}
+
+model Asset {
+  id        String      @id @default(cuid())
+  projectId String
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // S3 object key (e.g. "wedding/{projectId}/2026/08/171234.photo.jpg") — needed
+  // to delete the object later; url is the public/CDN URL stored for display.
+  key       String?
+  url       String
+  status    AssetStatus @default(pending)
+  filename  String?
+  width     Int?
+  height    Int?
+  mimeType  String?
+  size      Int?
+  blurHash  String?
+  metadata  Json?
+  createdAt DateTime    @default(now())
+
+  @@map("assets")
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String
+  date      DateTime
+  time      String?
+  venue     String
+  address   String?
+  lat       Float?
+  lng       Float?
+  mapUrl    String?
+  order     Int      @default(0)
+
+  @@map("events")
+}
+
+model RsvpEntry {
+  id          String        @id @default(cuid())
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String?
+  attending   RsvpAttending
+  guestCount  Int           @default(1)
+  message     String?
+  createdAt   DateTime      @default(now())
+
+  @@map("rsvp_entries")
+}
+
+model GuestbookEntry {
+  id        String          @id @default(cuid())
+  projectId String
+  project   Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String
+  message   String
+  status    GuestbookStatus @default(approved)
+  createdAt DateTime        @default(now())
+
+  @@map("guestbook_entries")
+}
+
+model GiftAccount {
+  id            String  @id @default(cuid())
+  projectId     String
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  label         String
+  bank          String
+  accountName   String
+  accountNumber String
+
+  @@map("gift_accounts")
+}
