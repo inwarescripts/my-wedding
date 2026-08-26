@@ -120,7 +120,7 @@ export const wedding = {
   rsvpFields: ["name", "phone", "attending", "guestCount", "message"] as const,
   guestbookSeed: [
     { name: "Hải Anh", message: "Chúc hai bạn trăm năm hạnh phúc, bạc đầu răng long!" },
-    { name: "Ngọc Mai", message: "Đám cưới đẹp quá, chúc mừng Minh & Linh nhé!" },
+    { name: "Ngọc Mai", message: "Đám cưới đẹp quá, chúc 2 bạn hạnh phúc nhé!" },
   ],
 };
 
