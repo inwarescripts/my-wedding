@@ -10,7 +10,6 @@ export default async function AdminHomePage() {
 
   const projects = await prisma.project.findMany({
     where: isAdmin ? {} : { userId: session?.user.id },
-    include: { couple: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -52,9 +51,7 @@ export default async function AdminHomePage() {
               href={`/admin/projects/${p.id}/editor`}
               className="flex-1 transition-colors hover:text-accent"
             >
-              <p className="font-heading text-xl text-ink">
-                {p.couple?.displayName ?? p.name}
-              </p>
+              <p className="font-heading text-xl text-ink">{p.name}</p>
               <p className="mt-1 text-sm text-ink-soft">/{p.slug}</p>
             </Link>
             <span
