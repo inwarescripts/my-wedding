@@ -9,6 +9,7 @@ import { isVideoUrl } from "@/lib/media";
 import { hasWebGL } from "@/lib/hasWebGL";
 import { getColorThemePalette, themeCssVars } from "@/motion/registry/theme";
 import { useCountdown } from "@/lib/useCountdown";
+import { getLenisInstance } from "@/lib/smooth-scroll";
 
 export type OpeningVariant =
   | "particleBloom"
@@ -99,9 +100,37 @@ export function Opening({
     setUse3d(!prefersReduced && hasWebGL());
   }, []);
 
+  // The gate is `fixed`, which only covers the page visually — it doesn't
+  // stop wheel/touch input from reaching the document underneath, and Lenis
+  // (smooth-scroll.tsx) converts that into a real scroll of the page behind
+  // the gate. Without this, a guest who scrolls while still looking at the
+  // opening screen lands mid-page (not the top) the moment they tap in, and
+  // the intro auto-scroll tour (autoScrollTour.ts, which starts from
+  // whatever `window.scrollY` happens to be) inherits the same offset.
+  //
+  // Locking via `<html>` overflow rather than `lenis.stop()`: Opening sits
+  // deep in the tree under SmoothScrollProvider, so React fires its mount
+  // effect *before* SmoothScrollProvider's own effect creates the Lenis
+  // instance (child effects run before the parent's) — getLenisInstance()
+  // is still null at this point, so calling .stop() here would silently do
+  // nothing. Removing the document's scrollable area works regardless of
+  // whether Lenis exists yet, since it leaves Lenis nothing to move.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const html = document.documentElement;
+    const prevOverflow = html.style.overflow;
+    html.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevOverflow;
+    };
+  }, []);
+
   function handleEnter() {
     if (entering) return;
     setEntering(true);
+    document.documentElement.style.overflow = "";
+    window.scrollTo(0, 0);
+    getLenisInstance()?.scrollTo(0, { immediate: true });
     onEnter();
     window.setTimeout(() => setHidden(true), 1300);
   }
@@ -118,6 +147,15 @@ export function Opening({
         animate={entering ? { opacity: 0 } : { opacity: 1 }}
         transition={{ duration: 1.1, ease: [0.65, 0, 0.35, 1] }}
         style={{ pointerEvents: entering ? "none" : "auto", ...themeCssVars(colorTheme) }}
+        // Lenis (smooth-scroll.tsx) listens for wheel/touch on `window`, so
+        // `overflow: hidden` on <html> alone doesn't stop it — it converts
+        // these into a real scroll of the page underneath regardless.
+        // Stopping propagation here, at the gate's own node, keeps the
+        // event from ever bubbling up to Lenis's listener while the gate is
+        // shown (harmless once `entering`, since pointerEvents is already
+        // "none" by then and this node stops receiving input at all).
+        onWheel={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
       >
         {use3d === null ? (
           <SceneLoading />

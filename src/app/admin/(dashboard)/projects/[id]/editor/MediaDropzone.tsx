@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   DndContext,
@@ -69,6 +69,18 @@ export function MediaDropzone({
 }) {
   const [uploading, setUploading] = useState<UploadingFile[]>([]);
 
+  // Dropping several files fires several concurrent uploadOne calls, each
+  // closing over `items` from the same render. Without this ref, whichever
+  // upload's onChange(...items, fileUrl) fires last "wins" and stomps the
+  // others' additions, since every call appends to that same stale snapshot
+  // instead of each other's results — only the last file to finish survives.
+  // The ref is mutated synchronously (no `await` between read and write), so
+  // concurrent completions can't interleave and lose an update.
+  const itemsRef = useRef(items);
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
   const uploadOne = useCallback(
     async (file: File) => {
       const tempId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -111,7 +123,9 @@ export function MediaDropzone({
 
         await confirmAssetUploaded(assetId);
 
-        onChange(multiple ? [...items, fileUrl] : [fileUrl]);
+        const next = multiple ? [...itemsRef.current, fileUrl] : [fileUrl];
+        itemsRef.current = next;
+        onChange(next);
       } catch {
         setUploading((prev) =>
           prev.map((u) => (u.tempId === tempId ? { ...u, error: "Tải lên thất bại" } : u))
@@ -125,7 +139,7 @@ export function MediaDropzone({
       URL.revokeObjectURL(previewUrl);
       setUploading((prev) => prev.filter((u) => u.tempId !== tempId));
     },
-    [projectId, items, onChange, multiple, accept]
+    [projectId, onChange, multiple, accept]
   );
 
   const onDrop = useCallback(

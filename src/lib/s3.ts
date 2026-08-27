@@ -1,4 +1,10 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  CopyObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 type RequiredEnvVar = "S3_REGION" | "S3_BUCKET" | "S3_KEY" | "S3_SECRET";
@@ -110,4 +116,38 @@ export async function headObject(key: string) {
 
 export async function deleteObject(key: string) {
   await s3.send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }));
+}
+
+/**
+ * Server-side copy of an existing object to a new key under `projectSlug` —
+ * used when cloning a project, so the clone gets its own independent S3
+ * object instead of sharing the source's (deleting one would otherwise take
+ * the other project's copy down with it).
+ */
+export async function copyObject(
+  sourceKey: string,
+  projectSlug: string
+): Promise<{ key: string; fileUrl: string }> {
+  const baseName = sourceKey.split("/").pop() || "file";
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const key = [prefix(), sanitizeSlug(projectSlug), `${yyyy}`, mm, `${Date.now()}.${baseName}`].join(
+    "/"
+  );
+
+  await s3.send(
+    new CopyObjectCommand({
+      Bucket: bucket(),
+      // CopySource must be URI-encoded (minus the path slashes) when the key
+      // contains characters like spaces — ours don't today, but the source
+      // key comes from another project's upload, not attacker input either
+      // way.
+      CopySource: `${bucket()}/${sourceKey.split("/").map(encodeURIComponent).join("/")}`,
+      Key: key,
+      ACL: "public-read",
+    })
+  );
+
+  return { key, fileUrl: buildFileUrl(key) };
 }

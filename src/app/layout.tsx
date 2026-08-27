@@ -32,13 +32,54 @@ const script = Great_Vibes({
   display: "swap",
 });
 
-// Generic fallback only — the real wedding page ("/") overrides this with
-// the couple's actual name/date/photo via generateMetadata() in page.tsx.
-// Keeping a couple-specific title here would go stale the moment an admin
-// renamed their project, since a root layout's metadata is static.
+// Site-wide fallback — /wedding/[slug] overrides this per-couple via its
+// own generateMetadata(), and "/" (the marketing homepage) sets its own
+// richer metadata in page.tsx. This is what's left for anything else
+// (admin, 404s, etc.) and the base every other page's OG/Twitter tags
+// inherit from unless they override.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://motdoi.click";
+const SITE_NAME = "Wedding Studio";
+
 export const metadata: Metadata = {
-  title: "Thiệp cưới online",
-  description: "Website cưới cá nhân hoá, tạo trong vài phút.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Thiệp cưới online",
+    template: `%s | ${SITE_NAME}`,
+  },
+  description:
+    "Tạo thiệp cưới online, website cưới đẹp như phim chỉ trong vài phút — không cần biết code. Thiệp mời cưới điện tử, RSVP, sổ lưu bút, mừng cưới online.",
+  keywords: [
+    "thiệp cưới online",
+    "thiệp mời cưới online",
+    "thiệp cưới điện tử",
+    "thiệp mời đám cưới online",
+    "tạo thiệp cưới online miễn phí",
+    "thiệp cưới miễn phí",
+    "website cưới",
+    "web cưới online",
+    "mẫu thiệp cưới đẹp",
+    "thiệp cưới 3D",
+    "phim cưới",
+    "save the date online",
+    "rsvp online",
+    "thiệp cưới cá nhân hoá",
+  ],
+  applicationName: SITE_NAME,
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
+  openGraph: {
+    siteName: SITE_NAME,
+    locale: "vi_VN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {

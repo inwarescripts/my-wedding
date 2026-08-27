@@ -2,6 +2,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createProject } from "./actions";
 import { DeleteProjectButton } from "./DeleteProjectButton";
+import { CloneProjectButton } from "./CloneProjectButton";
+import { AssignProjectButton } from "./AssignProjectButton";
+import { RsvpDrawerButton } from "./RsvpDrawerButton";
 import Link from "next/link";
 
 export default async function AdminHomePage() {
@@ -10,6 +13,7 @@ export default async function AdminHomePage() {
 
   const projects = await prisma.project.findMany({
     where: isAdmin ? {} : { userId: session?.user.id },
+    include: { user: { select: { id: true, name: true, username: true } } },
     orderBy: { createdAt: "desc" },
   });
 
@@ -52,7 +56,12 @@ export default async function AdminHomePage() {
               className="flex-1 transition-colors hover:text-accent"
             >
               <p className="font-heading text-xl text-ink">{p.name}</p>
-              <p className="mt-1 text-sm text-ink-soft">/{p.slug}</p>
+              <p className="mt-1 text-sm text-ink-soft">
+                /{p.slug}
+                {isAdmin && (
+                  <> · {p.user ? `@${p.user.username}` : "Chưa gán"}</>
+                )}
+              </p>
             </Link>
             <span
               className={`rounded-full px-3 py-1 text-xs uppercase tracking-widest ${
@@ -63,6 +72,11 @@ export default async function AdminHomePage() {
             >
               {p.status === "published" ? "Đã xuất bản" : "Bản nháp"}
             </span>
+            <RsvpDrawerButton projectId={p.id} projectLabel={p.name} />
+            {isAdmin && <CloneProjectButton projectId={p.id} projectName={p.name} />}
+            {isAdmin && (
+              <AssignProjectButton projectId={p.id} currentUserId={p.userId} />
+            )}
             <DeleteProjectButton projectId={p.id} />
           </div>
         ))}

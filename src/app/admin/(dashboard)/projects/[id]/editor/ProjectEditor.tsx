@@ -289,7 +289,19 @@ export function ProjectEditor({
   const [openId, setOpenId] = useState<string | null>("meta");
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+
+  const publicPath = `/wedding/${projectMeta.slug}`;
+
+  function handleCopyLink() {
+    const url =
+      typeof window !== "undefined" ? `${window.location.origin}${publicPath}` : publicPath;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   function focusPreview(frameId: string) {
     const container = previewRef.current;
@@ -628,14 +640,31 @@ export function ProjectEditor({
             {projectMeta.name}
           </h1>
         </div>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isPending}
-          className="border border-ink bg-ink px-6 py-2.5 text-xs uppercase tracking-widest text-ivory transition-opacity hover:opacity-85 disabled:opacity-50"
-        >
-          {isPending ? "Đang lưu..." : saved ? "Đã lưu ✓" : "Lưu tất cả thay đổi"}
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={publicPath}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="whitespace-nowrap border border-line px-4 py-2.5 text-xs uppercase tracking-widest text-ink-soft transition-colors hover:border-ink hover:text-ink"
+          >
+            Mở web
+          </a>
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="whitespace-nowrap border border-line px-4 py-2.5 text-xs uppercase tracking-widest text-ink-soft transition-colors hover:border-ink hover:text-ink"
+          >
+            {copied ? "Đã copy ✓" : "Copy link"}
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isPending}
+            className="border border-ink bg-ink px-6 py-2.5 text-xs uppercase tracking-widest text-ivory transition-opacity hover:opacity-85 disabled:opacity-50"
+          >
+            {isPending ? "Đang lưu..." : saved ? "Đã lưu ✓" : "Lưu tất cả thay đổi"}
+          </button>
+        </div>
       </header>
 
       <div className="grid min-h-0 flex-1 gap-6 p-6 md:grid-cols-[420px_1fr] md:p-10">

@@ -623,7 +623,7 @@ export function Fireworks({ contained = false }: { contained?: boolean } = {}) {
   const shells = useClientItems(() =>
     Array.from({ length: 5 }, (_, i) => {
       const hue = FIREWORK_HUES[i % FIREWORK_HUES.length];
-      const radius = randomBetween(55, 95);
+      const radius = randomBetween(130, 220);
       return {
         id: i,
         left: randomBetween(12, 88),
@@ -631,7 +631,7 @@ export function Fireworks({ contained = false }: { contained?: boolean } = {}) {
         hue,
         duration: randomBetween(9, 15),
         delay: randomBetween(0, 12),
-        sparks: fireworkSparks(radius, 12, 0),
+        sparks: fireworkSparks(radius, 18, 0),
       };
     })
   );
@@ -652,11 +652,11 @@ export function Fireworks({ contained = false }: { contained?: boolean } = {}) {
           {s.sparks.map((sp) => (
             <span
               key={sp.i}
-              className="absolute block h-[3px] w-[3px] rounded-full opacity-0"
+              className="absolute block h-2 w-2 rounded-full opacity-0"
               style={
                 {
-                  background: `hsl(${s.hue} 85% 72%)`,
-                  boxShadow: `0 0 6px 1px hsl(${s.hue} 85% 72% / 0.75)`,
+                  background: `hsl(${s.hue} 90% 78%)`,
+                  boxShadow: `0 0 18px 4px hsl(${s.hue} 90% 72% / 0.9), 0 0 4px 1px #fff`,
                   animation: `wedding-firework-pop ${s.duration}s ease-out ${s.delay}s infinite`,
                   "--sx": `${sp.sx}px`,
                   "--sy": `${sp.sy}px`,

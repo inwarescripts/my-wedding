@@ -1,10 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
 
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
 const NAV_ITEMS = [
   { href: "/admin", label: "Dự án" },
-  { href: "/admin/rsvp", label: "RSVP" },
   { href: "/admin/users", label: "Người dùng", adminOnly: true },
 ];
 

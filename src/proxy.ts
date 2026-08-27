@@ -1,10 +1,31 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
+const ROOT_DOMAIN = "motdoi.click";
+
 export default auth((req) => {
+  const hostname = (req.headers.get("host") || "").split(":")[0].toLowerCase();
+  const isRootDomain = hostname === ROOT_DOMAIN || hostname === `www.${ROOT_DOMAIN}`;
+  const isProjectSubdomain = !isRootDomain && hostname.endsWith(`.${ROOT_DOMAIN}`);
+
+  // Wildcard DNS (`*.motdoi.click` -> Vercel) routes every project
+  // subdomain here. Rewrite straight to `/wedding/{slug}` before any auth
+  // check runs — subdomains only ever serve the public wedding page, never
+  // /admin, so there's nothing below worth reaching for them.
+  if (isProjectSubdomain) {
+    const slug = hostname.slice(0, -(ROOT_DOMAIN.length + 1));
+    const url = req.nextUrl.clone();
+    url.pathname = `/wedding/${slug}`;
+    return NextResponse.rewrite(url);
+  }
+
   const isLoggedIn = !!req.auth?.user;
   const isAdmin = req.auth?.user?.role === "admin";
   const { pathname } = req.nextUrl;
+
+  if (!pathname.startsWith("/admin")) {
+    return NextResponse.next();
+  }
 
   if (pathname === "/admin/login") {
     if (isLoggedIn) {
@@ -31,5 +52,9 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  // Broadened from "/admin/:path*" to cover every page request — the
+  // subdomain rewrite above needs to run for the public wedding pages too,
+  // not just /admin. The early `!pathname.startsWith("/admin")` return
+  // keeps the auth check itself scoped to /admin like before.
+  matcher: ["/((?!api|_next/static|_next/image|favicon\\.ico|icon\\.png).*)"],
 };
