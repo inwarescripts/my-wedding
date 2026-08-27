@@ -1,7 +1,7 @@
 import type { CoupleInfo, EventItem, FamilyContent, FamilySide } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";
-import { FloralOrnament, LeafyCorner } from "@/motion/registry/family";
+import { FloralOrnament, LeafyCorner, BalloonCluster, DaisyCluster } from "@/motion/registry/family";
 import { MapModalButton } from "@/components/MapModalButton";
 
 function FamilyCard({ side, align }: { side: FamilySide; align: "left" | "right" }) {
@@ -251,29 +251,52 @@ function MonogramFamily(props: AnnouncementProps) {
   );
 }
 
-/** A rounded "wedding arch" cap sitting on top of the card — a nod to the
- * ceremony arch itself rather than florals. */
-function ArchFamily(props: AnnouncementProps) {
+/** A rounded, dashed-border "party invitation" card with a pill banner
+ * straddling the top edge and a cluster of balloons in each top corner —
+ * matching the popular thiệp-mời-bo-tròn printed-card look (scalloped
+ * frame, playful banner header) rather than this section's usual formal
+ * engraved-invitation styling. */
+function ScallopFamily(props: AnnouncementProps) {
   return (
     <Reveal preset="fadeUp" className="relative mx-auto mt-16 max-w-lg">
-      <div
-        aria-hidden
-        className="absolute -top-10 left-1/2 h-20 w-44 -translate-x-1/2 rounded-t-full border border-b-0 border-accent-soft/60 bg-ivory-deep/50"
-      />
-      <div className="relative border border-line bg-ivory px-6 pb-14 pt-16 text-center sm:px-12">
+      <BalloonCluster className="pointer-events-none absolute -left-6 -top-14 h-28 w-28 sm:-left-10" />
+      <BalloonCluster className="pointer-events-none absolute -right-6 -top-14 h-28 w-28 [transform:scaleX(-1)] sm:-right-10" />
+
+      <div className="relative rounded-[2.5rem] border-2 border-dashed border-accent-soft/70 bg-ivory px-6 pb-12 pt-14 text-center sm:px-12">
+        <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent px-8 py-2.5 font-heading text-lg italic tracking-wide text-ivory shadow-flat">
+          Thiệp Mời
+        </span>
         <AnnouncementBody {...props} />
       </div>
     </Reveal>
   );
 }
 
-/** No box, no ornament — just the announcement text with generous
- * whitespace. For couples who want the section to feel quiet rather than
- * card-like. */
-function MinimalFamily(props: AnnouncementProps) {
+/** A two-panel "open card" look — a dark cover page on the left (like the
+ * outside of a folded physical invitation, its own gold floral corners and
+ * a large script "Thiệp Mời" title) sitting beside the actual announcement
+ * on the right, as if the card had been opened flat. Stacks to cover-then-
+ * content on mobile instead of a literal side-by-side spread. */
+function OpenedFamily(props: AnnouncementProps) {
   return (
-    <Reveal preset="fadeUp" className="mx-auto mt-14 max-w-md">
-      <AnnouncementBody {...props} />
+    <Reveal preset="fadeUp" className="mx-auto mt-12 max-w-3xl">
+      <div className="grid overflow-hidden rounded-sm border border-line shadow-flat md:grid-cols-2">
+        <div className="relative flex flex-col items-center justify-center gap-6 bg-ink px-8 py-16 text-center text-ivory">
+          <DaisyCluster className="pointer-events-none h-14 w-44" />
+          <div>
+            <p className="font-script text-5xl leading-none text-ivory">Thiệp Mời</p>
+            <p className="mt-3 text-xs uppercase tracking-[0.4em] text-ivory/60">
+              {props.couple.displayName}
+            </p>
+          </div>
+          <DaisyCluster className="pointer-events-none h-14 w-44 [transform:rotate(180deg)]" />
+        </div>
+
+        <div className="relative border-t border-line bg-ivory px-6 py-14 text-center sm:px-12 md:border-l md:border-t-0">
+          <DaisyCluster className="pointer-events-none absolute -top-2 right-2 h-10 w-32 [transform:scaleX(-1)]" />
+          <AnnouncementBody {...props} />
+        </div>
+      </div>
     </Reveal>
   );
 }
@@ -308,10 +331,10 @@ export function Family({
           <FramedFamily content={content} couple={couple} event={event} />
         ) : variant === "monogram" ? (
           <MonogramFamily content={content} couple={couple} event={event} />
-        ) : variant === "arch" ? (
-          <ArchFamily content={content} couple={couple} event={event} />
-        ) : variant === "minimal" ? (
-          <MinimalFamily content={content} couple={couple} event={event} />
+        ) : variant === "scallop" ? (
+          <ScallopFamily content={content} couple={couple} event={event} />
+        ) : variant === "opened" ? (
+          <OpenedFamily content={content} couple={couple} event={event} />
         ) : (
           <SimpleFamily content={content} />
         )}
