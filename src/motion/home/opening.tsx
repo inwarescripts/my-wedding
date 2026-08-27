@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CoupleInfo } from "@/types/wedding-config";
 import { isVideoUrl } from "@/lib/media";
+import { SmartCoverImage } from "@/components/SmartCoverImage";
 import { hasWebGL } from "@/lib/hasWebGL";
 import { getColorThemePalette, themeCssVars } from "@/motion/registry/theme";
 import { useCountdown } from "@/lib/useCountdown";
@@ -194,14 +194,14 @@ export function Opening({
                   className="h-full w-full object-cover opacity-40"
                 />
               ) : (
-                <Image
+                <SmartCoverImage
                   src={couple.coverImage}
                   alt=""
-                  fill
-                  priority
                   sizes="130vw"
                   quality={90}
-                  className="object-cover opacity-40"
+                  priority
+                  imageClassName="opacity-40"
+                  backdropClassName="opacity-30"
                 />
               )}
             </motion.div>

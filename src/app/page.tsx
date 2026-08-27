@@ -399,6 +399,14 @@ export default async function Home() {
                       <span className="absolute right-4 top-4 border border-ivory/40 bg-ink/30 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-ivory backdrop-blur-sm">
                         Live
                       </span>
+                      <span className="absolute left-4 top-4 flex flex-col items-start gap-0 rounded-lg bg-gradient-to-br from-accent to-[#8a5f47] px-3 py-1.5 shadow-md ring-1 ring-ivory/30">
+                        <span className="text-[9px] uppercase leading-none tracking-[0.15em] text-ivory/75">
+                          Chỉ từ
+                        </span>
+                        <span className="flex items-baseline gap-0.5 font-heading text-base italic leading-tight text-ivory">
+                          199K
+                        </span>
+                      </span>
                       <div className="absolute inset-x-0 bottom-0 p-6 text-ivory">
                         <p className="font-heading text-2xl italic drop-shadow-sm">
                           {project.displayName}

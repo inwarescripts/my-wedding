@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import type { CoupleInfo } from "@/types/wedding-config";
 import { useParallax } from "@/motion/useParallax";
 import { AnimatedHeading } from "@/motion/registry/typography";
 import { isVideoUrl } from "@/lib/media";
 import { BowOrnament } from "@/motion/registry/bow";
 import { LiveWishesOverlay } from "@/components/LiveWishesOverlay";
+import { SmartCoverImage } from "@/components/SmartCoverImage";
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -42,14 +42,13 @@ export function Hero({
               className="h-full w-full object-cover"
             />
           ) : (
-            <Image
+            <SmartCoverImage
               src={couple.coverImage}
               alt={couple.displayName}
-              fill
-              priority
               sizes="100vw"
               quality={90}
-              className="object-cover"
+              priority
+              backdropClassName="opacity-80"
             />
           ))}
       </div>
