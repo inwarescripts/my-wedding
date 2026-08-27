@@ -12,17 +12,33 @@ const TITLE =
   "Thiệp cưới online đẹp như phim — Tạo website cưới miễn phí trong vài phút";
 const DESCRIPTION =
   "Wedding Studio giúp bạn tạo thiệp mời cưới online, website cưới cá nhân hoá đẹp như phim trong vài phút — không cần biết code. Miễn phí dùng thử, có RSVP, sổ lưu bút, mừng cưới online, nhạc nền, hiệu ứng 3D.";
+const KEYWORDS =
+  "thiệp mời online, thiệp mời online đẹp, thiệp mời online đẹp nhất, thiệp cưới online, thước phim online, thiệp online, tạo website cưới, thiệp cưới điện tử, mẫu thiệp cưới 3d, thiệp cưới digital";
+
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://motdoi.click";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: "/" },
+  keywords: KEYWORDS,
+  alternates: { canonical: baseUrl },
+  robots: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+    "max-video-preview": -1,
+  },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: "/",
+    url: baseUrl,
+    siteName: "Wedding Studio",
+    type: "website",
+    locale: "vi_VN",
   },
   twitter: {
+    card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
   },
@@ -36,17 +52,176 @@ function formatDate(iso: string) {
   });
 }
 
+function buildJsonLdGraph(baseUrl: string) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${baseUrl}/#organization`,
+        name: "Wedding Studio",
+        url: baseUrl,
+        logo: {
+          "@type": "ImageObject",
+          url: `${baseUrl}/icon.png`,
+        },
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${baseUrl}/#website`,
+        url: baseUrl,
+        name: "Wedding Studio",
+        description: DESCRIPTION,
+        publisher: { "@id": `${baseUrl}/#organization` },
+        inLanguage: "vi-VN",
+      },
+      {
+        "@type": "CollectionPage",
+        "@id": `${baseUrl}/#webpage`,
+        url: baseUrl,
+        name: TITLE,
+        description: DESCRIPTION,
+        isPartOf: { "@id": `${baseUrl}/#website` },
+        about: {
+          "@type": "Thing",
+          name: "Thiệp cưới online và Website đám cưới",
+        },
+        inLanguage: "vi-VN",
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${baseUrl}/#faq`,
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "Thiệp cưới online là gì?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Thiệp cưới online (hay thiệp mời điện tử) là phiên bản kỹ thuật số của thiệp cưới truyền thống, thường dưới dạng một trang web (website cưới). Khách mời có thể xem thông tin lễ cưới, hình ảnh cô dâu chú rể, bản đồ địa điểm, nhạc nền và thực hiện RSVP (xác nhận tham dự) trực tiếp trên điện thoại hoặc máy tính.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Làm sao để tạo thiệp mời online đẹp nhất?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Để tạo thiệp mời online đẹp nhất tại Wedding Studio, bạn chỉ cần 3 bước: 1. Chọn mẫu thiệp cưới 3D hoặc giao diện thước phim trực quan. 2. Tải lên album ảnh cưới của bạn và chỉnh sửa thông tin (ngày giờ, địa điểm). 3. Tùy chỉnh nhạc nền, hiệu ứng và xuất bản website cưới để gửi link cho bạn bè.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Thiệp online có những tính năng gì nổi bật?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Các mẫu thiệp mời online tại Wedding Studio tích hợp sẵn nhiều tính năng thông minh bao gồm: form RSVP xác nhận tham dự tự động, sổ lưu bút kỹ thuật số, mã QR mừng cưới online, tích hợp Google Maps chỉ đường, và hiệu ứng cuộn trang sống động như một thước phim điện ảnh.",
+            },
+          },
+        ],
+      },
+      {
+        "@type": "HowTo",
+        "@id": `${baseUrl}/#howto`,
+        name: "Làm sao để tạo thiệp mời online đẹp nhất",
+        description: "Hướng dẫn chi tiết 3 bước tạo website cưới và thiệp mời online chuyên nghiệp tại Wedding Studio.",
+        step: [
+          {
+            "@type": "HowToStep",
+            name: "Bước 1: Chọn mẫu giao diện",
+            text: "Chọn mẫu thiệp cưới 3D hoặc giao diện thước phim trực quan phù hợp với phong cách của bạn."
+          },
+          {
+            "@type": "HowToStep",
+            name: "Bước 2: Tải lên ảnh và chỉnh sửa nội dung",
+            text: "Tải lên album ảnh cưới của bạn và chỉnh sửa các thông tin quan trọng như ngày giờ, địa điểm tổ chức."
+          },
+          {
+            "@type": "HowToStep",
+            name: "Bước 3: Tùy chỉnh và xuất bản",
+            text: "Tùy chỉnh nhạc nền, hiệu ứng đặc biệt và xuất bản website cưới để lấy link gửi cho khách mời."
+          }
+        ]
+      }
+    ],
+  };
+}
+
+function SemanticSEOContent() {
+  return (
+    <div className="bg-ivory-deep border-t border-line/50 py-12 relative overflow-hidden" suppressHydrationWarning>
+      <div className="mx-auto max-w-6xl px-6 md:px-10 relative z-10">
+        <div className="max-w-4xl mx-auto space-y-10 text-sm text-ink-soft leading-relaxed">
+          
+          <header className="text-center space-y-4">
+            <h2 className="font-heading text-2xl italic text-ink md:text-3xl">
+              Nền tảng tạo <span className="text-accent">thiệp mời online đẹp nhất</span>
+            </h2>
+            <p className="text-base text-ink-soft font-serif">
+              Wedding Studio tự hào là công cụ thiết kế website cưới chuyên nghiệp, mang đến trải nghiệm 
+              tạo <strong>thiệp cưới online</strong> sống động như một <strong>thước phim online</strong>. 
+              Gửi gắm tình yêu qua từng điểm chạm kỹ thuật số tinh tế, tối ưu hiển thị hoàn hảo trên mọi thiết bị di động.
+            </p>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-line/30">
+            <section className="space-y-4">
+              <h3 className="text-lg font-bold text-ink">Vì sao nên chọn thiệp cưới online?</h3>
+              <p>Khác biệt với thiệp giấy truyền thống, <strong>thiệp online</strong> mang lại những ưu điểm vượt trội:</p>
+              <ul className="list-disc pl-5 space-y-2 text-ink-soft">
+                <li><strong>Tiết kiệm chi phí và thời gian:</strong> Khởi tạo nhanh chóng, gửi đến hàng trăm khách mời chỉ bằng một cú click chuột qua link hoặc mã QR.</li>
+                <li><strong>Trải nghiệm tương tác đa chiều:</strong> Tích hợp âm thanh, hiệu ứng 3D, thư viện ảnh cưới sắc nét và các hiệu ứng chuyển cảnh điện ảnh.</li>
+                <li><strong>Quản lý khách mời dễ dàng:</strong> Tính năng RSVP giúp theo dõi chính xác số lượng khách tham dự để chuẩn bị cỗ cưới chu đáo.</li>
+              </ul>
+            </section>
+
+            <section className="space-y-4">
+              <h3 className="text-lg font-bold text-ink">Tính năng thông minh cho website cưới</h3>
+              <p>Hệ thống mẫu <strong>thiệp mời online đẹp</strong> của chúng tôi được trang bị các tính năng cao cấp:</p>
+              <ul className="list-disc pl-5 space-y-2 text-ink-soft">
+                <li><strong>Sổ lưu bút kỹ thuật số:</strong> Khách mời để lại lời chúc trực tiếp trên website.</li>
+                <li><strong>Mừng cưới online an toàn:</strong> Tích hợp mã QR chuyển khoản ngân hàng tinh tế và bảo mật.</li>
+                <li><strong>Chỉ đường Google Maps:</strong> Bản đồ định vị chính xác địa điểm tổ chức hôn lễ và tiệc cưới.</li>
+              </ul>
+            </section>
+          </div>
+
+          <section className="pt-8 border-t border-line/30 space-y-6">
+            <h2 className="font-heading text-xl italic text-ink text-center">
+              Giải đáp thắc mắc về thiệp mời online
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h4 className="font-bold text-ink text-base">Thiệp cưới online là gì?</h4>
+                <p>Thiệp cưới online (thiệp mời điện tử) là phiên bản kỹ thuật số của thiệp truyền thống dưới dạng website. Khách mời có thể xem hình ảnh, thông tin và thực hiện RSVP trực tiếp trên điện thoại.</p>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-bold text-ink text-base">Làm sao để tạo thiệp mời online đẹp nhất?</h4>
+                <ol className="list-decimal pl-5 space-y-1">
+                  <li><strong>Bước 1:</strong> Chọn mẫu thiệp cưới 3D hoặc giao diện thước phim trực quan.</li>
+                  <li><strong>Bước 2:</strong> Tải lên album ảnh cưới và chỉnh sửa thông tin (ngày giờ, địa điểm).</li>
+                  <li><strong>Bước 3:</strong> Tùy chỉnh nhạc nền, hiệu ứng và xuất bản website cưới để gửi link.</li>
+                </ol>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-bold text-ink text-base">Có thể dùng thử miễn phí không?</h4>
+                <p>Hoàn toàn có thể. Wedding Studio cho phép bạn tạo, chỉnh sửa và xem trước toàn bộ website cưới hoàn toàn miễn phí trước khi quyết định nâng cấp gói dịch vụ.</p>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-bold text-ink text-base">Mất bao lâu để hoàn thiện thiệp?</h4>
+                <p>Với trình kiến tạo trực quan (Kéo & Thả), bạn không cần biết lập trình. Quá trình thay ảnh và điền thông tin chỉ mất từ 10 đến 15 phút để có một website cưới hoàn chỉnh.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default async function Home() {
   const projects = await getPublishedProjectsGallery();
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Wedding Studio",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://motdoi.click",
-    description: DESCRIPTION,
-    inLanguage: "vi-VN",
-  };
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://motdoi.click";
+  const jsonLd = buildJsonLdGraph(baseUrl);
 
   return (
     <div className="bg-ivory">
@@ -236,6 +411,8 @@ export default async function Home() {
           </Link>
         </Reveal>
       </section>
+
+      <SemanticSEOContent />
 
       <footer className="flex items-center justify-center gap-3 border-t border-line px-6 py-8 text-center text-xs text-ink-soft">
         <span className="font-script text-base text-accent">W</span>
