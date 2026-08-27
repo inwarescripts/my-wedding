@@ -12,6 +12,7 @@ export type FrameType =
   | "timeline"
   | "family"
   | "events"
+  | "schedule"
   | "countdown"
   | "map"
   | "rsvp"
@@ -107,6 +108,27 @@ export interface EventItem {
   address: string | null;
 }
 
+export type ScheduleIconKey =
+  | "car"
+  | "home"
+  | "rings"
+  | "camera"
+  | "heart"
+  | "gift"
+  | "clock"
+  | "mapPin";
+
+export interface ScheduleItem {
+  id: string;
+  time: string;
+  title: string;
+  icon: ScheduleIconKey;
+}
+
+export interface ScheduleContent {
+  items: ScheduleItem[];
+}
+
 export interface GiftAccountItem {
   id: string;
   label: string;
@@ -167,6 +189,11 @@ export interface ProjectSettings {
   /** Full-page decorative overlay (falling petals, bokeh, sparkle...) — see
    * src/motion/registry/ambient.tsx for the variant list. */
   ambientEffect: string;
+  /** Two confetti cannons firing from the bottom corners in periodic waves
+   * — see ConfettiCannon in src/motion/registry/ambient.tsx. A standalone
+   * on/off layer, not one more choice inside `ambientEffect`'s single-select
+   * — it can run stacked on top of whichever ambientEffect is also chosen. */
+  confettiCannon: boolean;
   introSequence: IntroSequenceSettings;
   /** Coordinated colour palette (ivory/ink/accent/line/gold) — see
    * src/motion/registry/theme.tsx. Overrides the CSS custom properties that
@@ -190,8 +217,13 @@ export const defaultProjectSettings: ProjectSettings = {
     loop: true,
     volume: 0.6,
   },
-  transitionVariant: "none",
+  // "none" felt like sections snapping into place with nothing connecting
+  // them — the fade/blur dissolve is subtle enough not to slow scrolling
+  // down but gives adjacent sections a soft handoff instead. Still fully
+  // opt-out per project via the "Chuyển cảnh" setting.
+  transitionVariant: "fadeBlur",
   ambientEffect: "none",
+  confettiCannon: false,
   introSequence: {
     enabled: false,
     scrollSpeed: 40,

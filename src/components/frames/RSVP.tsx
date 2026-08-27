@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { RsvpContent } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";
+import { BowOrnament } from "@/motion/registry/bow";
 import { submitRsvp, type SubmitState } from "@/app/actions/public";
 
 const inputClass =
@@ -12,9 +13,11 @@ const inputClass =
 export function RSVP({
   projectId,
   content,
+  bowStyle = "none",
 }: {
   projectId: string;
   content: RsvpContent;
+  bowStyle?: string;
 }) {
   const [state, formAction, pending] = useActionState<SubmitState, FormData>(
     submitRsvp.bind(null, projectId),
@@ -22,9 +25,11 @@ export function RSVP({
   );
 
   return (
+    <div className="border-y border-line bg-ivory-deep">
     <Section className="text-center">
       <Eyebrow>Xác nhận tham dự</Eyebrow>
       <Divider />
+      <BowOrnament variant={bowStyle} className="-mt-2 mb-4" />
       <p className="mx-auto max-w-md font-serif text-lg text-ink-soft">
         Sự hiện diện của bạn là món quà quý giá nhất với chúng tôi
       </p>
@@ -98,5 +103,6 @@ export function RSVP({
         )}
       </Reveal>
     </Section>
+    </div>
   );
 }

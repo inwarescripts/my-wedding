@@ -18,11 +18,15 @@ import type {
   RsvpContent,
   EventItem,
   GiftAccountItem,
+  ScheduleContent,
+  ScheduleItem,
 } from "@/types/wedding-config";
 import type { GuestbookAdminItem } from "@/lib/wedding-config";
 import { WeddingRenderer } from "@/components/WeddingRenderer";
 import { openingRegistry } from "@/motion/home/opening";
 import { galleryRegistry } from "@/motion/registry/gallery";
+import { scheduleIconRegistry, ScheduleIcon } from "@/motion/registry/scheduleIcon";
+import { familyRegistry } from "@/motion/registry/family";
 import { gallery3dRegistry } from "@/motion/registry/gallery3d";
 import { timelineRegistry } from "@/motion/registry/timeline";
 import { typographyRegistry } from "@/motion/registry/typography";
@@ -56,6 +60,7 @@ const SORTABLE_TYPES: FrameType[] = [
   "timeline",
   "family",
   "events",
+  "schedule",
   "countdown",
   "map",
   "rsvp",
@@ -281,6 +286,7 @@ const FRAME_LABELS: Record<FrameType, string> = {
   timeline: "Dòng thời gian",
   family: "Gia đình",
   events: "Lễ cưới",
+  schedule: "Lịch trình",
   countdown: "Đếm ngược",
   map: "Bản đồ",
   rsvp: "RSVP",
@@ -426,6 +432,14 @@ export function ProjectEditor({
     setConfig((prev) => ({
       ...prev,
       settings: { ...prev.settings, ambientEffect: variant },
+    }));
+  }
+
+  function updateConfettiCannon(enabled: boolean) {
+    markDirty();
+    setConfig((prev) => ({
+      ...prev,
+      settings: { ...prev.settings, confettiCannon: enabled },
     }));
   }
 
@@ -616,13 +630,30 @@ export function ProjectEditor({
         );
       case "family":
         return (
-          <FamilySection
-            content={frame.content as FamilyContent}
-            onChange={(c) => updateFrameContent(frame.id, c)}
-          />
+          <>
+            <FamilySection
+              content={frame.content as FamilyContent}
+              onChange={(c) => updateFrameContent(frame.id, c)}
+            />
+            <div className="pt-2">
+              <p className={labelClass}>Kiểu hiển thị</p>
+              <VariantPicker
+                registry={familyRegistry}
+                value={frame.variant ?? "simple"}
+                onChange={(v) => selectVariant(frame.id, v)}
+              />
+            </div>
+          </>
         );
       case "events":
         return <EventsSection events={config.events} onChange={setEvents} />;
+      case "schedule":
+        return (
+          <ScheduleSection
+            content={frame.content as ScheduleContent}
+            onChange={(c) => updateFrameContent(frame.id, c)}
+          />
+        );
       case "countdown":
         return (
           <p className="text-sm text-ink-soft">
@@ -877,6 +908,20 @@ export function ProjectEditor({
                 onChange={updateAmbientEffect}
               />
             </div>
+
+            <div className="space-y-2 border-t border-line pt-4">
+              <ToggleField
+                label="Pháo giấy phụt hai bên"
+                checked={config.settings.confettiCannon}
+                onChange={updateConfettiCannon}
+              />
+              <p className="text-xs text-ink-soft">
+                Bắn pháo giấy màu từ 2 góc dưới màn hình, phụt từng đợt rồi
+                ngừng, lặp lại suốt trang. Chạy độc lập, có thể bật cùng lúc
+                với hiệu ứng nền phía trên.
+              </p>
+            </div>
+
             <div className="pt-2">
               <p className={labelClass}>Chuyển cảnh giữa các section</p>
               <VariantPicker
@@ -1391,6 +1436,78 @@ function EventsSection({
       ))}
       <SmallButton tone="accent" onClick={addEvent}>
         + Thêm lễ
+      </SmallButton>
+    </div>
+  );
+}
+
+function ScheduleSection({
+  content,
+  onChange,
+}: {
+  content: ScheduleContent;
+  onChange: (c: ScheduleContent) => void;
+}) {
+  const items = content.items ?? [];
+
+  function updateItem(i: number, patch: Partial<ScheduleItem>) {
+    onChange({ items: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  }
+  function removeItem(i: number) {
+    onChange({ items: items.filter((_, idx) => idx !== i) });
+  }
+  function addItem() {
+    onChange({
+      items: [
+        ...items,
+        { id: nextTempId("schedule"), time: "", title: "", icon: "clock" },
+      ],
+    });
+  }
+
+  return (
+    <div className="space-y-4">
+      {items.map((item, i) => (
+        <div key={item.id} className="space-y-2 border-b border-line pb-3">
+          <div className="grid grid-cols-2 gap-2">
+            <TextField
+              label="Giờ"
+              value={item.time}
+              onChange={(v) => updateItem(i, { time: v })}
+            />
+            <TextField
+              label="Nội dung"
+              value={item.title}
+              onChange={(v) => updateItem(i, { title: v })}
+            />
+          </div>
+          <div>
+            <p className={labelClass}>Biểu tượng</p>
+            <div className="grid grid-cols-4 gap-2">
+              {Object.entries(scheduleIconRegistry).map(([key, meta]) => (
+                <button
+                  key={key}
+                  type="button"
+                  title={meta.label}
+                  onClick={() => updateItem(i, { icon: key as ScheduleItem["icon"] })}
+                  className={`flex items-center justify-center rounded-md border py-2 transition-colors ${
+                    item.icon === key
+                      ? "border-accent bg-accent/5 text-accent"
+                      : "border-line text-ink-soft hover:border-ink hover:text-ink"
+                  }`}
+                >
+                  <ScheduleIcon name={key} />
+                </button>
+              ))}
+            </div>
+          </div>
+          <SmallButton tone="danger" onClick={() => removeItem(i)}>
+            Xoá mốc này
+          </SmallButton>
+        </div>
+      ))}
+      <SmallButton tone="accent" onClick={addItem}>
+        + Thêm mốc lịch trình
       </SmallButton>
     </div>
   );

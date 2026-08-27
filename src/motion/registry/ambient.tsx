@@ -70,10 +70,86 @@ function useBurst<T>(
   return items;
 }
 
+/** Fires a fresh batch of items every `cycleMs` (from mount, forever), each
+ * batch clearing back to empty after `activeMs` — for a persistent effect
+ * that "phụt từng đợt" (fires in periodic waves with a pause in between)
+ * instead of being continuously on screen like Petals/Hearts/etc. `activeMs`
+ * must cover the slowest particle's own delay+duration or its tail gets cut
+ * off mid-animation (same bug class the burst effects above hit before). */
+function useCyclingBurst<T>(factory: () => T[], activeMs: number, cycleMs: number): T[] {
+  const [items, setItems] = useState<T[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let activeTimer: ReturnType<typeof setTimeout>;
+    let cycleTimer: ReturnType<typeof setTimeout>;
+
+    function fire() {
+      if (cancelled) return;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setItems(factory());
+      activeTimer = setTimeout(() => {
+        if (!cancelled) setItems([]);
+      }, activeMs);
+      cycleTimer = setTimeout(fire, cycleMs);
+    }
+
+    fire();
+    return () => {
+      cancelled = true;
+      clearTimeout(activeTimer);
+      clearTimeout(cycleTimer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeMs, cycleMs]);
+
+  return items;
+}
+
+/** Ambient effects are purely decorative, so they're the first thing to cut
+ * for anyone who's asked their OS/browser to reduce motion — and, as a
+ * side effect, this also protects weaker devices from paying for hundreds
+ * of simultaneously-animated layers when the visitor has already signalled
+ * they'd rather not have screens moving at them. Checked once on mount,
+ * same pattern as `hasWebGL()` in Opening. */
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+  return reduced;
+}
+
+/** Halves the heaviest particle counts (confetti, petal/heart bursts) on
+ * small screens — phones are where "giật lag" (stutter) reports come from,
+ * since they pair the weakest GPUs with this being one of several
+ * animated layers already on screen (Lenis smooth-scroll, the 3D opening
+ * scene, framer-motion scroll reveals). Desktop keeps the full density.
+ * A lazy initializer (not an effect) so the value is already correct by
+ * the time it's read inside useCyclingBurst/useBurst's own mount-time
+ * effect — those only fire once, so a value that arrived a render later
+ * (the effect-based pattern the reduced-motion check above uses) would be
+ * captured too late and never actually apply. Safe to read window here
+ * unlike the reduced-motion check: this number never changes what the
+ * very first render's JSX looks like (particle arrays are always empty
+ * until an effect fills them in), so there's no hydration mismatch risk. */
+function useIsCompactViewport(): boolean {
+  const [compact] = useState(() => typeof window !== "undefined" && window.innerWidth <= 640);
+  return compact;
+}
+
+// Deliberately full viewport width, not capped to the iPad-width content
+// column (see `main` in WeddingRenderer.tsx) — on a wide desktop screen the
+// falling petals/hearts/confetti should drift across the whole browser
+// behind the narrower card, not be clipped to it.
 const OVERLAY_CLASS =
   "ambient-fx pointer-events-none fixed inset-0 z-30 overflow-hidden";
 
 export function AmbientEffect({ variant }: { variant: string }) {
+  const reducedMotion = usePrefersReducedMotion();
+  if (reducedMotion) return null;
+
   switch (variant as AmbientVariant) {
     case "petals":
       return <Petals />;
@@ -324,6 +400,166 @@ function Mist() {
   );
 }
 
+// Rose, lavender, gold — same warm/pastel family as the rest of the ambient
+// effects (see FIREWORK_HUES above) rather than a generic rainbow confetti.
+const CONFETTI_HUES = [340, 272, 42];
+
+// Three staggered pulses within one wave (instead of one uniform spray) —
+// "phụt lúc chậm lúc nhanh": a quick pop, a short gap, another pop, a
+// longer gap, then a last pop, rather than everything launching at once.
+const CONFETTI_WAVE_DELAYS = [0, 0.55, 1.25];
+
+function confettiPieces(side: "left" | "right", count: number) {
+  const dirSign = side === "left" ? 1 : -1;
+  return Array.from({ length: count }, (_, i) => ({
+    id: `${side}-${i}`,
+    side,
+    hue: CONFETTI_HUES[i % CONFETTI_HUES.length],
+    heart: Math.random() < 0.12,
+    round: Math.random() < 0.4,
+    // Rectangles are longer streamer-shaped strips now (w stays thin, h
+    // stretches out) so they read clearly at a glance instead of looking
+    // like near-invisible specks; round pieces get their own, slightly
+    // bigger diameter since a tiny dot disappears more easily than a strip.
+    w: randomBetween(4, 6.5),
+    h: randomBetween(9, 14),
+    dotSize: randomBetween(6, 9),
+    // Travel is expressed as vw/vh so the cannons stay anchored to the
+    // actual corners of the (full-bleed, see OVERLAY_CLASS) viewport
+    // regardless of screen size. Sideways reach is kept fairly short (and,
+    // per the keyframe below, never overshoots past its peak) so the two
+    // cannons fan out across their own half instead of both streams
+    // converging into one pile in the middle. Vertical reach varies
+    // independently so throws fan out at different angles, not one beam.
+    // Wide enough range that the longer throws from each side cross well
+    // past the centre into the opposite half — reads as the two streams
+    // leaning into and weaving through each other — while the short end
+    // keeps some pieces near their own corner so it doesn't read as two
+    // solid beams crossing in an X.
+    cx: dirSign * randomBetween(10, 58),
+    cy: -randomBetween(55, 110),
+    // Shorter, slower fall than the initial rise — real confetti drifts
+    // down more gently than it was launched.
+    fall: randomBetween(20, 40),
+    rot: dirSign * randomBetween(360, 900) * (Math.random() > 0.5 ? 1 : -1),
+    duration: randomBetween(2.6, 3.6),
+    delay: CONFETTI_WAVE_DELAYS[i % CONFETTI_WAVE_DELAYS.length] + randomBetween(0, 0.3),
+  }));
+}
+
+function renderConfettiPieces(items: ReturnType<typeof confettiPieces>) {
+  return items.map((p) => {
+    const shapeStyle: CSSProperties = p.heart
+      ? { fontSize: p.dotSize * 2.6 }
+      : p.round
+        ? {
+            width: p.dotSize,
+            height: p.dotSize,
+            borderRadius: "50%",
+            background: `hsl(${p.hue} 78% 72%)`,
+          }
+        : {
+            width: p.w,
+            height: p.h,
+            borderRadius: 1.5,
+            background: `hsl(${p.hue} 78% 72%)`,
+          };
+    return (
+      <span
+        key={p.id}
+        className={`absolute bottom-0 block leading-none opacity-0 ${
+          p.side === "left" ? "left-0" : "right-0"
+        }`}
+        style={
+          {
+            ...shapeStyle,
+            animation: `wedding-confetti-shoot ${p.duration}s ease-out ${p.delay}s 1`,
+            "--cx": `${p.cx}vw`,
+            "--cy": `${p.cy}vh`,
+            "--cfall": `${p.fall}vh`,
+            "--crot": `${p.rot}deg`,
+          } as CSSProperties
+        }
+      >
+        {p.heart ? "❤️" : null}
+      </span>
+    );
+  });
+}
+
+const CONFETTI_KEYFRAMES = `
+  @keyframes wedding-confetti-shoot {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(0.5); opacity: 0; }
+    6% { opacity: 1; }
+    34% { transform: translate3d(var(--cx), var(--cy), 0) rotate(calc(var(--crot) * 0.55)) scale(1); opacity: 1; }
+    100% { transform: translate3d(var(--cx), calc(var(--cy) + var(--cfall)), 0) rotate(var(--crot)) scale(0.85); opacity: 0; }
+  }
+`;
+
+/** Two confetti cannons firing from the bottom-left and bottom-right
+ * corners, arcing toward the centre and falling back down — matching a
+ * classic party-popper effect. A standalone opt-in layer (see the
+ * `confettiCannon` project setting), independent of — and layered on top
+ * of — whichever `ambientEffect` is also chosen, not one more option
+ * inside that same single-select. Fires a dense wave every ~7.5s and sits
+ * empty in between ("phụt từng đợt... rồi ngừng"), rather than looping
+ * continuously like Petals/Hearts. */
+export function ConfettiCannon() {
+  const ACTIVE_MS = 5300; // covers worst case: ~1.55s delay + 3.6s duration
+  const CYCLE_MS = 9500; // ~4.2s pause between waves
+
+  const reducedMotion = usePrefersReducedMotion();
+  const compact = useIsCompactViewport();
+  // 120 pieces a side (240 total) per wave on desktop — dense enough to read
+  // as a real party-popper cannon. Halved on phones, where this is one of
+  // several animated layers competing for a much weaker GPU.
+  const perSide = compact ? 60 : 120;
+  const items = useCyclingBurst(
+    () => [...confettiPieces("left", perSide), ...confettiPieces("right", perSide)],
+    ACTIVE_MS,
+    CYCLE_MS
+  );
+
+  if (reducedMotion) return null;
+
+  return (
+    <div className={OVERLAY_CLASS} aria-hidden>
+      {renderConfettiPieces(items)}
+      <style>{CONFETTI_KEYFRAMES}</style>
+    </div>
+  );
+}
+
+/** Same shoot animation as ConfettiCannon, just one bigger one-shot wave for
+ * the gate-entry moment (see AMBIENT_BURST_DURATION_MS-style burst pattern
+ * used by the ambientEffect variants) — fired independently whenever the
+ * `confettiCannon` setting is on, regardless of which ambientEffect (if
+ * any) is also selected. */
+export function ConfettiCannonBurst({ triggerKey }: { triggerKey: number | null }) {
+  const reducedMotion = usePrefersReducedMotion();
+  const compact = useIsCompactViewport();
+  const perSide = compact ? 70 : 140;
+  const items = useBurst(
+    triggerKey,
+    () => [...confettiPieces("left", perSide), ...confettiPieces("right", perSide)],
+    5300
+  );
+
+  if (reducedMotion || items.length === 0) return null;
+
+  return (
+    <div className={OVERLAY_CLASS} aria-hidden>
+      {renderConfettiPieces(items)}
+      <style>{CONFETTI_KEYFRAMES}</style>
+    </div>
+  );
+}
+
+// How long the entry burst's flurry runs — WeddingRenderer can wait this
+// long (same idea as AMBIENT_BURST_DURATION_MS) before anything else that
+// shouldn't overlap it kicks in.
+export const CONFETTI_CANNON_BURST_DURATION_MS = 5300;
+
 /** How long each burst variant's flurry runs — WeddingRenderer waits this
  * long before starting the optional auto-scroll tour, so the two never
  * overlap awkwardly. Keep in sync with each burst's own `ttlMs` below. */
@@ -351,6 +587,9 @@ export function AmbientBurst({
   variant: string;
   triggerKey: number | null;
 }) {
+  const reducedMotion = usePrefersReducedMotion();
+  if (reducedMotion) return null;
+
   switch (variant as AmbientVariant) {
     case "petals":
       return <PetalBurst triggerKey={triggerKey} />;
@@ -374,10 +613,11 @@ export function AmbientBurst({
 }
 
 function PetalBurst({ triggerKey }: { triggerKey: number | null }) {
+  const compact = useIsCompactViewport();
   const petals = useBurst(
     triggerKey,
     () =>
-      Array.from({ length: 300 }, (_, i) => ({
+      Array.from({ length: compact ? 150 : 300 }, (_, i) => ({
         id: i,
         left: randomBetween(0, 100),
         size: randomBetween(12, 24),
@@ -620,8 +860,17 @@ function heartSparks(scale: number, count: number, fallAmount: number) {
  * it can also be dropped into a single section, e.g. the closing/footer
  * frame, instead of only the whole-page ambient overlay. */
 export function Fireworks({ contained = false }: { contained?: boolean } = {}) {
+  // Also used unconditionally by Final.tsx's closing frame (not only via
+  // the AmbientEffect dispatcher, which already gates reduced-motion
+  // itself) — gate here too so that call site respects it as well.
+  const reducedMotion = usePrefersReducedMotion();
+  const compact = useIsCompactViewport();
+  // This variant runs forever (not a one-shot burst) whenever selected, so
+  // its layer count is a sustained cost, not a brief spike — worth trimming
+  // sparks-per-shell a bit further on phones than the burst effects below.
+  const sparksPerShell = compact ? 11 : 18;
   const shells = useClientItems(() =>
-    Array.from({ length: 5 }, (_, i) => {
+    Array.from({ length: compact ? 4 : 5 }, (_, i) => {
       const hue = FIREWORK_HUES[i % FIREWORK_HUES.length];
       const radius = randomBetween(130, 220);
       return {
@@ -631,12 +880,12 @@ export function Fireworks({ contained = false }: { contained?: boolean } = {}) {
         hue,
         duration: randomBetween(9, 15),
         delay: randomBetween(0, 12),
-        sparks: fireworkSparks(radius, 18, 0),
+        sparks: fireworkSparks(radius, sparksPerShell, 0),
       };
     })
   );
 
-  if (shells.length === 0) return null;
+  if (reducedMotion || shells.length === 0) return null;
 
   return (
     <div
@@ -688,10 +937,15 @@ function FireworksBurst({ triggerKey }: { triggerKey: number | null }) {
   const FINALE_DELAY = 2.6;
   const FINALE_DURATION = 3.2;
 
+  const compact = useIsCompactViewport();
+  const shellCount = compact ? 12 : 18;
+  const sparksPerShell = compact ? 12 : 18;
+  const finaleSparks = compact ? 60 : 90;
+
   const shells = useBurst(
     triggerKey,
     () => {
-      const regular = Array.from({ length: 18 }, (_, i) => {
+      const regular = Array.from({ length: shellCount }, (_, i) => {
         const hue = FIREWORK_HUES[i % FIREWORK_HUES.length];
         const radius = randomBetween(70, 130);
         return {
@@ -703,7 +957,7 @@ function FireworksBurst({ triggerKey }: { triggerKey: number | null }) {
           duration: randomBetween(1.3, 1.9),
           delay: randomBetween(0, 2),
           finale: false,
-          sparks: fireworkSparks(radius, 18, 50),
+          sparks: fireworkSparks(radius, sparksPerShell, 50),
         };
       });
       regular.push({
@@ -715,7 +969,7 @@ function FireworksBurst({ triggerKey }: { triggerKey: number | null }) {
         duration: FINALE_DURATION,
         delay: FINALE_DELAY,
         finale: true,
-        sparks: heartSparks(13, 90, 55),
+        sparks: heartSparks(13, finaleSparks, 55),
       });
       return regular;
     },
@@ -1001,6 +1255,8 @@ function HeartsBurst({ triggerKey }: { triggerKey: number | null }) {
   const FLOAT_MAX_DELAY = FORM_DURATION - 1.2;
   const FLOAT_MAX_DURATION = 4;
 
+  const compact = useIsCompactViewport();
+
   const hearts = useBurst(
     triggerKey,
     () =>
@@ -1022,7 +1278,7 @@ function HeartsBurst({ triggerKey }: { triggerKey: number | null }) {
   const floaters = useBurst(
     triggerKey,
     () =>
-      Array.from({ length: 70 }, (_, i) => ({
+      Array.from({ length: compact ? 35 : 70 }, (_, i) => ({
         id: i,
         left: randomBetween(0, 100),
         size: randomBetween(14, 24),

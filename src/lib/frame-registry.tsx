@@ -9,6 +9,7 @@ import type {
   MapContent,
   PhotoStackContent,
   RsvpContent,
+  ScheduleContent,
   StoryContent,
   TimelineContent,
 } from "@/types/wedding-config";
@@ -16,6 +17,7 @@ import { Hero } from "@/components/frames/Hero";
 import { Story } from "@/components/frames/Story";
 import { Family } from "@/components/frames/Family";
 import { Events } from "@/components/frames/Events";
+import { Schedule } from "@/components/frames/Schedule";
 import { Countdown } from "@/components/frames/Countdown";
 import { MapFrame } from "@/components/frames/MapFrame";
 import { RSVP } from "@/components/frames/RSVP";
@@ -65,24 +67,36 @@ export function renderFrame(frame: FrameConfig, ctx: RenderFrameContext) {
     case "timeline":
       return <TimelineVariant content={frame.content as TimelineContent} variant={frame.variant} />;
     case "family":
-      return <Family content={frame.content as FamilyContent} />;
+      return (
+        <Family
+          content={frame.content as FamilyContent}
+          variant={frame.variant}
+          couple={ctx.couple}
+          event={ctx.events[0]}
+        />
+      );
     case "events":
       return <Events events={ctx.events} />;
+    case "schedule":
+      return <Schedule content={frame.content as ScheduleContent} bowStyle={ctx.bowStyle} />;
     case "countdown":
       return (
         <Countdown
           weddingDate={ctx.couple.weddingDate}
           weddingDateLunar={ctx.couple.weddingDateLunar}
+          bowStyle={ctx.bowStyle}
         />
       );
     case "map":
       return <MapFrame content={frame.content as MapContent} />;
     case "rsvp":
-      return <RSVP projectId={ctx.projectId} content={frame.content as RsvpContent} />;
+      return (
+        <RSVP projectId={ctx.projectId} content={frame.content as RsvpContent} bowStyle={ctx.bowStyle} />
+      );
     case "guestbook":
       return <Guestbook projectId={ctx.projectId} seed={ctx.guestbook} />;
     case "gift":
-      return <GiftFrame gifts={ctx.gifts} />;
+      return <GiftFrame gifts={ctx.gifts} bowStyle={ctx.bowStyle} />;
     case "final":
       return <Final couple={ctx.couple} />;
     default:

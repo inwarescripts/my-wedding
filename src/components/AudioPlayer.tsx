@@ -48,7 +48,11 @@ export function AudioPlayer({
   if (!settings.enabled || !settings.assetUrl) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    // right offset tracks the same iPad-width column as the page content:
+    // on a wide screen it hugs the card's right edge instead of the far
+    // browser edge; max() falls back to a plain 1.5rem inset once the
+    // viewport is narrower than the capped column (mobile).
+    <div className="fixed bottom-6 right-[max(1.5rem,calc(50%-360px))] z-40">
       <audio
         ref={audioRef}
         src={settings.assetUrl}

@@ -17,6 +17,8 @@ export function defaultFrameContent(type: FrameType): unknown {
       return { title: "Album ảnh", subtitle: "", items: [] };
     case "timeline":
       return { items: [] };
+    case "schedule":
+      return { items: [] };
     case "family": {
       const map = { enabled: false, address: "", lat: 0, lng: 0, directionsUrl: "" };
       return {
@@ -37,4 +39,5 @@ export const DEFAULT_VARIANT: Partial<Record<FrameType, string>> = {
   gallery: "masonry",
   photoStack: "floatingPhotos",
   timeline: "alternating",
+  family: "simple",
 };

@@ -41,6 +41,7 @@ function parseSettings(raw: unknown): ProjectSettings {
     transitionVariant:
       r.transitionVariant ?? defaultProjectSettings.transitionVariant,
     ambientEffect,
+    confettiCannon: r.confettiCannon ?? defaultProjectSettings.confettiCannon,
     introSequence: {
       enabled: r.introSequence?.enabled ?? defaultProjectSettings.introSequence.enabled,
       // `autoScrollSeconds` was the shape before this became a constant

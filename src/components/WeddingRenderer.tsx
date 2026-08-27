@@ -6,7 +6,15 @@ import { Opening } from "@/motion/home/opening";
 import { SectionTransition } from "@/motion/registry/transition";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { ScrollProgress } from "@/components/ScrollProgress";
-import { AmbientEffect, AmbientBurst, AMBIENT_BURST_DURATION_MS, type AmbientVariant } from "@/motion/registry/ambient";
+import {
+  AmbientEffect,
+  AmbientBurst,
+  AMBIENT_BURST_DURATION_MS,
+  type AmbientVariant,
+  ConfettiCannon,
+  ConfettiCannonBurst,
+  CONFETTI_CANNON_BURST_DURATION_MS,
+} from "@/motion/registry/ambient";
 import { backgroundStyle } from "@/motion/registry/background";
 import { getColorThemePalette, themeCssVars } from "@/motion/registry/theme";
 import { startAutoScrollTour } from "@/lib/autoScrollTour";
@@ -36,8 +44,16 @@ export function WeddingRenderer({
     window.setTimeout(() => {
       setBurstKey(Date.now());
       if (config.settings.introSequence.enabled) {
-        const burstDuration =
+        const ambientBurstDuration =
           AMBIENT_BURST_DURATION_MS[config.settings.ambientEffect as AmbientVariant] ?? 0;
+        // confettiCannon is a standalone layer stacked on top of whichever
+        // ambientEffect is chosen (see the setting's doc comment), so its
+        // own entry burst can outlast the ambientEffect one — wait for
+        // whichever finishes last before starting the auto-scroll.
+        const confettiBurstDuration = config.settings.confettiCannon
+          ? CONFETTI_CANNON_BURST_DURATION_MS
+          : 0;
+        const burstDuration = Math.max(ambientBurstDuration, confettiBurstDuration);
         window.setTimeout(() => {
           startAutoScrollTour(config.settings.introSequence.scrollSpeed);
         }, burstDuration + PAUSE_BEFORE_SCROLL_MS);
@@ -77,8 +93,15 @@ export function WeddingRenderer({
       <AudioPlayer active={entered} settings={config.settings.music} />
       <AmbientEffect variant={config.settings.ambientEffect} />
       <AmbientBurst variant={config.settings.ambientEffect} triggerKey={burstKey} />
+      {config.settings.confettiCannon && (
+        <>
+          <ConfettiCannon />
+          <ConfettiCannonBurst triggerKey={burstKey} />
+        </>
+      )}
 
       <main
+        className="relative mx-auto max-w-[768px] md:shadow-[0_0_60px_rgba(0,0,0,0.12)]"
         style={{
           ...themeCssVars(config.settings.colorTheme),
           ...backgroundStyle(

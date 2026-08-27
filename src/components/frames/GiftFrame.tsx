@@ -4,6 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import type { GiftAccountItem } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";
+import { BowOrnament } from "@/motion/registry/bow";
 
 function GiftCard({ label, bank, accountName, accountNumber }: GiftAccountItem) {
   const qrValue = `${bank}|${accountNumber}|${accountName}`;
@@ -21,23 +22,32 @@ function GiftCard({ label, bank, accountName, accountNumber }: GiftAccountItem) 
   );
 }
 
-export function GiftFrame({ gifts }: { gifts: GiftAccountItem[] }) {
+export function GiftFrame({
+  gifts,
+  bowStyle = "none",
+}: {
+  gifts: GiftAccountItem[];
+  bowStyle?: string;
+}) {
   return (
-    <Section className="text-center">
-      <Eyebrow>Mừng cưới</Eyebrow>
-      <Divider />
-      <p className="mx-auto max-w-md font-serif text-lg text-ink-soft">
-        Tình cảm của bạn là điều quý giá nhất. Nếu muốn gửi lời chúc bằng một
-        món quà nhỏ, chúng tôi xin trân trọng đón nhận.
-      </p>
+    <div className="border-y border-line bg-ivory-deep">
+      <Section className="text-center">
+        <Eyebrow>Mừng cưới</Eyebrow>
+        <Divider />
+        <BowOrnament variant={bowStyle} className="-mt-2 mb-4" />
+        <p className="mx-auto max-w-md font-serif text-lg text-ink-soft">
+          Tình cảm của bạn là điều quý giá nhất. Nếu muốn gửi lời chúc bằng một
+          món quà nhỏ, chúng tôi xin trân trọng đón nhận.
+        </p>
 
-      <div className="mt-10 grid gap-6 md:grid-cols-2">
-        {gifts.map((gift, i) => (
-          <Reveal key={gift.id} preset={i % 2 === 0 ? "fadeRight" : "fadeLeft"}>
-            <GiftCard {...gift} />
-          </Reveal>
-        ))}
-      </div>
-    </Section>
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          {gifts.map((gift, i) => (
+            <Reveal key={gift.id} preset={i % 2 === 0 ? "fadeRight" : "fadeLeft"}>
+              <GiftCard {...gift} />
+            </Reveal>
+          ))}
+        </div>
+      </Section>
+    </div>
   );
 }
