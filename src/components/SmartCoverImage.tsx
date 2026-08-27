@@ -35,13 +35,23 @@ export function SmartCoverImage({
 
   function handleLoad(e: SyntheticEvent<HTMLImageElement>) {
     const img = e.currentTarget;
-    if (!img.naturalWidth || !img.naturalHeight || typeof window === "undefined") return;
+    if (!img.naturalWidth || !img.naturalHeight) return;
+    // Measure the actual containing box (this image's own parent, since
+    // `fill` sizes it to that), not `window.innerWidth/innerHeight` — the
+    // container here is `h-[100svh]` (small viewport height, i.e. accounts
+    // for mobile browsers' collapsible address bar), which on phones can
+    // differ noticeably from the raw window size at the moment this image
+    // finishes loading. Comparing against a mismatched proxy misclassified
+    // some photos on mobile, leaving them width-fit instead of height-fit
+    // (visible gaps top/bottom instead of the intended left/right ones).
+    const box = img.parentElement?.getBoundingClientRect();
+    if (!box || !box.width || !box.height) return;
     const imageRatio = img.naturalWidth / img.naturalHeight;
-    const viewportRatio = window.innerWidth / window.innerHeight;
-    // Some margin below the viewport's own ratio — a photo just a bit
-    // narrower than the screen still crops acceptably with `cover`; only
+    const containerRatio = box.width / box.height;
+    // Some margin below the container's own ratio — a photo just a bit
+    // narrower than the frame still crops acceptably with `cover`; only
     // meaningfully narrower (portrait-ish) photos need the swap.
-    setIsNarrow(imageRatio < viewportRatio - 0.15);
+    setIsNarrow(imageRatio < containerRatio - 0.15);
   }
 
   return (
