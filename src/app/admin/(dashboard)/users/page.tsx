@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createUser } from "./actions";
 import { DeleteUserButton } from "./DeleteUserButton";
+import { SetPasswordButton } from "./SetPasswordButton";
 
 export default async function UsersPage() {
   const session = await auth();
@@ -88,7 +89,10 @@ export default async function UsersPage() {
                 @{u.username} · {u._count.projects} dự án
               </p>
             </div>
-            <DeleteUserButton userId={u.id} disabled={u.id === session.user.id} />
+            <div className="flex items-center gap-2">
+              <SetPasswordButton userId={u.id} username={u.username} />
+              <DeleteUserButton userId={u.id} disabled={u.id === session.user.id} />
+            </div>
           </div>
         ))}
       </div>

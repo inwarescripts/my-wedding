@@ -28,6 +28,17 @@ export async function createUser(formData: FormData) {
   revalidatePath("/admin/users");
 }
 
+export async function resetUserPassword(userId: string, newPassword: string) {
+  await requireAdmin();
+
+  if (newPassword.length < 6) {
+    throw new Error("Mật khẩu cần ít nhất 6 ký tự");
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+}
+
 export async function deleteUser(userId: string) {
   const session = await requireAdmin();
   if (session.user.id === userId) {

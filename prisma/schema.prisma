@@ -54,6 +54,13 @@ model Project {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   publishedAt DateTime?
+  // Set to createdAt + 1 month at creation time (application code, not a DB
+  // default — Prisma/Postgres can't express a relative-to-now default per
+  // row). Only an admin can change it afterwards; past this date, the
+  // assigned (non-admin) owner can no longer save changes in the editor —
+  // see saveProjectConfig. Null = never expires (legacy rows predating this
+  // column, or an admin explicitly clearing it).
+  expiredAt   DateTime?
   // Site-wide visual settings that don't belong to one frame: typography
   // animation variant, background music. See src/types/wedding-config.ts.
   settings    Json?

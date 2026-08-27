@@ -5,7 +5,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession, requireProjectAccess, requireAdmin } from "@/lib/authz";
 import { copyObject, deleteObject } from "@/lib/s3";
+import { slugify } from "@/lib/slugify";
 import { RSVP_PAGE_SIZE, type RsvpEntryItem } from "./rsvp-types";
+
+function oneMonthFromNow(): Date {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 1);
+  return d;
+}
 
 /** Recursively replaces any string that exactly matches a key in `urlMap` —
  * used to point a cloned project's frame content / cover image at the
@@ -25,17 +32,6 @@ function remapUrlsDeep<T>(value: T, urlMap: Map<string, string>): T {
     return out as T;
   }
   return value;
-}
-
-function slugify(name: string): string {
-  const base = name
-    .toLowerCase()
-    .replace(/đ/g, "d")
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // strip Vietnamese diacritics
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return base || "du-an";
 }
 
 export async function createProject(formData: FormData) {
@@ -62,6 +58,7 @@ export async function createProject(formData: FormData) {
       name,
       status: "draft",
       userId: session.user.id,
+      expiredAt: oneMonthFromNow(),
       couple: {
         create: {
           groomName: "",
@@ -164,6 +161,7 @@ export async function cloneProject(projectId: string, name: string) {
       name: trimmedName,
       status: "draft",
       userId: session.user.id,
+      expiredAt: oneMonthFromNow(),
       settings: source.settings
         ? (remapUrlsDeep(source.settings, urlMap) as object)
         : undefined,

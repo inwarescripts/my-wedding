@@ -156,6 +156,7 @@ export interface EditorData {
     slug: string;
     status: "draft" | "published";
     userId: string | null;
+    expiredAt: string | null;
   };
   guestbookAll: GuestbookAdminItem[];
 }
@@ -171,6 +172,7 @@ export async function getEditorData(projectId: string): Promise<EditorData | nul
       slug: project.slug,
       status: project.status as "draft" | "published",
       userId: project.userId,
+      expiredAt: project.expiredAt ? project.expiredAt.toISOString() : null,
     },
     guestbookAll: project.guestbook.map((g) => ({
       id: g.id,

@@ -12,7 +12,14 @@ import type {
 } from "@/types/wedding-config";
 
 export interface SaveProjectPayload {
-  project: { name: string; slug: string; status: "draft" | "published" };
+  project: {
+    name: string;
+    slug: string;
+    status: "draft" | "published";
+    // Admin-only — non-admin edits to this are ignored server-side (see
+    // below), so leaving it out of the payload entirely is also fine.
+    expiredAt?: string | null;
+  };
   couple: CoupleInfo;
   frames: Array<{
     id: string;
@@ -27,15 +34,24 @@ export interface SaveProjectPayload {
 }
 
 export async function saveProjectConfig(projectId: string, payload: SaveProjectPayload) {
-  await requireProjectAccess(projectId);
+  const session = await requireProjectAccess(projectId);
+  const isAdmin = session.user.role === "admin";
 
-  // Fetch the slug as it stood before this save — if the admin renamed it,
-  // the old "/wedding/{oldSlug}" URL needs revalidating too, or Next would
-  // keep serving its last cached HTML instead of a 404.
+  // Fetch the slug + expiry as they stood before this save — the slug is
+  // needed to know whether the old "/wedding/{oldSlug}" URL needs
+  // revalidating too, and expiredAt gates the save itself below.
   const previous = await prisma.project.findUnique({
     where: { id: projectId },
-    select: { slug: true },
+    select: { slug: true, expiredAt: true },
   });
+
+  // Only admins bypass expiry — an assigned (non-admin) owner can view the
+  // editor past expiry but can't persist changes. Checked here (not just
+  // the disabled Save button client-side) since actions.ts is directly
+  // callable regardless of what the UI shows.
+  if (!isAdmin && previous?.expiredAt && previous.expiredAt.getTime() < Date.now()) {
+    throw new Error("Dự án đã hết hạn sử dụng. Vui lòng liên hệ admin để gia hạn.");
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.project.update({
@@ -46,6 +62,12 @@ export async function saveProjectConfig(projectId: string, payload: SaveProjectP
         status: payload.project.status,
         publishedAt: payload.project.status === "published" ? new Date() : null,
         settings: payload.settings as unknown as object,
+        // Non-admin edits to expiredAt are silently dropped, not just
+        // hidden in the UI — `payload.project.expiredAt` is trusted only
+        // when the session itself is admin.
+        ...(isAdmin && payload.project.expiredAt !== undefined
+          ? { expiredAt: payload.project.expiredAt ? new Date(payload.project.expiredAt) : null }
+          : {}),
       },
     });
 

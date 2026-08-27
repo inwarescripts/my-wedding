@@ -34,6 +34,7 @@ import { colorThemeRegistry } from "@/motion/registry/theme";
 import { saveProjectConfig, setGuestbookStatus, type SaveProjectPayload } from "./actions";
 import { defaultFrameContent, DEFAULT_VARIANT } from "./defaults";
 import { MediaDropzone, IMAGE_OR_VIDEO_ACCEPT, AUDIO_ACCEPT } from "./MediaDropzone";
+import { sanitizeSlugInput } from "@/lib/slugify";
 import {
   Field,
   TextField,
@@ -63,7 +64,12 @@ const SORTABLE_TYPES: FrameType[] = [
   "final",
 ];
 
-type ProjectMeta = { name: string; slug: string; status: "draft" | "published" };
+type ProjectMeta = {
+  name: string;
+  slug: string;
+  status: "draft" | "published";
+  expiredAt: string | null;
+};
 
 function VariantPicker({
   registry,
@@ -81,10 +87,10 @@ function VariantPicker({
           key={key}
           type="button"
           onClick={() => onChange(key)}
-          className={`border px-3 py-2.5 text-left text-sm transition-colors ${
+          className={`rounded-md border px-3 py-2.5 text-left text-sm transition-all hover:-translate-y-[1px] ${
             value === key
-              ? "border-ink bg-ink text-ivory"
-              : "border-line text-ink-soft hover:border-ink hover:text-ink"
+              ? "border-accent bg-accent/5 text-accent font-medium shadow-sm ring-1 ring-accent/20"
+              : "border-line text-ink-soft hover:border-ink hover:text-ink bg-transparent"
           }`}
         >
           {meta.label}
@@ -108,10 +114,10 @@ function ThemeSwatchPicker({
           key={key}
           type="button"
           onClick={() => onChange(key)}
-          className={`flex items-center gap-2.5 border px-3 py-2.5 text-left text-sm transition-colors ${
+          className={`flex items-center gap-2.5 rounded-md border px-3 py-2.5 text-left text-sm transition-all hover:-translate-y-[1px] ${
             value === key
-              ? "border-ink"
-              : "border-line hover:border-ink"
+              ? "border-accent bg-accent/5 ring-1 ring-accent/20 shadow-sm"
+              : "border-line hover:border-ink bg-transparent"
           }`}
         >
           <span
@@ -144,26 +150,30 @@ function Accordion({
   children: ReactNode;
 }) {
   return (
-    <div className="card-flat overflow-hidden">
+    <div
+      className={`overflow-hidden rounded-xl border bg-ivory shadow-flat transition-colors duration-200 ${
+        open ? "border-accent" : "border-line hover:border-accent-soft"
+      }`}
+    >
       <div className="flex items-center justify-between gap-3 px-5 py-3.5">
         <button
           type="button"
           onClick={onToggle}
-          className="flex flex-1 items-center gap-3 text-left"
+          className="flex flex-1 items-center gap-3 text-left focus:outline-none"
         >
           <span
-            className={`inline-block text-ink-soft transition-transform duration-200 ${
-              open ? "rotate-90" : ""
+            className={`inline-block transition-transform duration-300 ${
+              open ? "rotate-90 text-accent" : "text-ink-soft"
             }`}
           >
             ▸
           </span>
-          <span className="font-heading text-base text-ink">{title}</span>
+          <span className={`font-heading text-base transition-colors ${open ? "text-accent" : "text-ink"}`}>{title}</span>
         </button>
         {right}
       </div>
       {open && (
-        <div className="space-y-4 border-t border-line px-5 py-5">{children}</div>
+        <div className="space-y-5 border-t border-line/50 px-5 py-5">{children}</div>
       )}
     </div>
   );
@@ -171,7 +181,7 @@ function Accordion({
 
 function GroupLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="px-1 pt-1 text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+    <p className="px-1 pb-1 pt-3 text-[11px] font-bold uppercase tracking-[0.25em] text-ink-soft/70">
       {children}
     </p>
   );
@@ -186,15 +196,20 @@ function EnabledSwitch({
 }) {
   return (
     <label
-      className="flex items-center gap-2 text-xs uppercase tracking-widest text-ink-soft"
+      className="flex cursor-pointer items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-ink-soft group"
       onClick={(e) => e.stopPropagation()}
     >
-      {checked ? "Hiện" : "Ẩn"}
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
+      <span className="min-w-[32px] text-right">{checked ? "Hiện" : "Ẩn"}</span>
+      <div className="relative flex items-center">
+        <input
+          type="checkbox"
+          className="peer sr-only"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <div className="h-4 w-7 rounded-full bg-line transition-colors peer-checked:bg-accent peer-focus-visible:ring-2 peer-focus-visible:ring-accent/50"></div>
+        <div className="absolute left-[2px] h-3 w-3 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-3"></div>
+      </div>
     </label>
   );
 }
@@ -278,10 +293,16 @@ export function ProjectEditor({
   initialConfig,
   initialProjectMeta,
   guestbookAll,
+  isProd,
+  siteDomain,
+  isAdmin,
 }: {
   initialConfig: WeddingConfig;
   initialProjectMeta: ProjectMeta;
   guestbookAll: GuestbookAdminItem[];
+  isProd: boolean;
+  siteDomain: string;
+  isAdmin: boolean;
 }) {
   const [config, setConfig] = useState(initialConfig);
   const [projectMeta, setProjectMeta] = useState(initialProjectMeta);
@@ -292,11 +313,27 @@ export function ProjectEditor({
   const [copied, setCopied] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  const publicPath = `/wedding/${projectMeta.slug}`;
+  // Role-independent — just "is this date in the past", used for display.
+  // `isExpired` below (role-gated) is what actually locks the Save button.
+  const isPastExpiry =
+    !!projectMeta.expiredAt && new Date(projectMeta.expiredAt).getTime() < Date.now();
+
+  // Non-admin owner past expiry: view-only. Checked again server-side in
+  // saveProjectConfig regardless of this — see editor/actions.ts.
+  const isExpired = !isAdmin && isPastExpiry;
+
+  // In prod each project is served off its own subdomain — see lib/site.ts.
+  // "Mở web"/"Copy link" need an absolute URL in that case (a relative path
+  // would open /wedding/slug on the admin's own domain instead), whereas
+  // dev has no subdomain DNS/SSL set up so it stays path-based.
+  const publicPath = isProd
+    ? `https://${projectMeta.slug}.${siteDomain}`
+    : `/wedding/${projectMeta.slug}`;
 
   function handleCopyLink() {
-    const url =
-      typeof window !== "undefined" ? `${window.location.origin}${publicPath}` : publicPath;
+    const url = publicPath.startsWith("http")
+      ? publicPath
+      : `${window.location.origin}${publicPath}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
@@ -639,6 +676,26 @@ export function ProjectEditor({
           <h1 className="font-heading text-xl italic text-ink">
             {projectMeta.name}
           </h1>
+          {projectMeta.expiredAt && (
+            <p
+              className={`mt-1 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${
+                isPastExpiry
+                  ? "border-red-200 bg-red-50 text-red-700"
+                  : "border-accent-soft bg-accent-soft/15 text-accent"
+              }`}
+            >
+              <span aria-hidden>⏳</span>
+              Hạn sử dụng:{" "}
+              {new Date(projectMeta.expiredAt).toLocaleString("vi-VN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+              {isPastExpiry && " — đã hết hạn"}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <a
@@ -659,13 +716,20 @@ export function ProjectEditor({
           <button
             type="button"
             onClick={handleSave}
-            disabled={isPending}
+            disabled={isPending || isExpired}
+            title={isExpired ? "Dự án đã hết hạn sử dụng — liên hệ admin để gia hạn" : undefined}
             className="border border-ink bg-ink px-6 py-2.5 text-xs uppercase tracking-widest text-ivory transition-opacity hover:opacity-85 disabled:opacity-50"
           >
             {isPending ? "Đang lưu..." : saved ? "Đã lưu ✓" : "Lưu tất cả thay đổi"}
           </button>
         </div>
       </header>
+
+      {isExpired && (
+        <div className="flex-shrink-0 border-b border-line bg-red-50 px-6 py-2.5 text-center text-xs text-red-700 md:px-10">
+          Dự án đã hết hạn sử dụng — bạn chỉ có thể xem, không thể lưu thay đổi. Liên hệ admin để gia hạn.
+        </div>
+      )}
 
       <div className="grid min-h-0 flex-1 gap-6 p-6 md:grid-cols-[420px_1fr] md:p-10">
         {/* LEFT: every setting, grouped into "cài đặt chung" vs "section trang cưới" */}
@@ -685,9 +749,15 @@ export function ProjectEditor({
               value={projectMeta.slug}
               onChange={(v) => {
                 markDirty();
-                setProjectMeta((p) => ({ ...p, slug: v }));
+                setProjectMeta((p) => ({ ...p, slug: sanitizeSlugInput(v) }));
               }}
             />
+            <p className="mt-1 text-[11px] leading-relaxed text-ink-soft/80">
+              Slug dùng làm địa chỉ subdomain riêng của thiệp (VD:{" "}
+              <span className="text-ink">minh-linh</span>.motdoi.click) — chỉ
+              gồm chữ cái không dấu, số và dấu gạch ngang, không dùng tiếng
+              Việt có dấu hay khoảng trắng.
+            </p>
             <Field label="Trạng thái">
               <select
                 value={projectMeta.status}
@@ -704,6 +774,26 @@ export function ProjectEditor({
                 <option value="published">Đã xuất bản</option>
               </select>
             </Field>
+            {isAdmin && (
+              <>
+                <TextField
+                  label="Hạn sử dụng (admin)"
+                  type="datetime-local"
+                  value={projectMeta.expiredAt ? projectMeta.expiredAt.slice(0, 16) : ""}
+                  onChange={(v) => {
+                    markDirty();
+                    setProjectMeta((p) => ({
+                      ...p,
+                      expiredAt: v ? new Date(v).toISOString() : null,
+                    }));
+                  }}
+                />
+                <p className="mt-1 text-xs text-ink-soft">
+                  Sau ngày này, chủ dự án (nếu không phải admin) chỉ xem
+                  được, không lưu được thay đổi. Để trống = không giới hạn.
+                </p>
+              </>
+            )}
           </Accordion>
 
           {opening && (

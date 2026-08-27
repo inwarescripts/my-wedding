@@ -9,7 +9,10 @@ const ZALO_PHONE = "0982377638";
 /** "Liên hệ" trigger + QR/Zalo modal, reused in the homepage header (no
  * `demoUrl` — QR points at the site itself) and on each template card
  * (`demoUrl` set — QR points straight at that wedding's demo page so it can
- * be scanned open on a phone). */
+ * be scanned open on a phone). `demoUrl` may be a path (`/wedding/slug`, in
+ * dev) or an already-absolute subdomain URL (`https://slug.motdoi.click`,
+ * in prod — see lib/site.ts) — only the path form gets the current origin
+ * prefixed onto it. */
 export function ContactButton({
   demoUrl,
   label = "Liên hệ",
@@ -26,7 +29,9 @@ export function ContactButton({
     setOrigin(window.location.origin);
   }, []);
 
-  const qrValue = `${origin || "https://motdoi.click"}${demoUrl ?? ""}`;
+  const qrValue = demoUrl?.startsWith("http")
+    ? demoUrl
+    : `${origin || "https://motdoi.click"}${demoUrl ?? ""}`;
 
   function handleOpen(e: MouseEvent) {
     e.preventDefault();

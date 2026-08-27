@@ -13,8 +13,8 @@ export function nextTempId(prefix: string) {
 }
 
 export const inputClass =
-  "w-full border-0 border-b border-line bg-transparent px-1 py-2 font-serif text-ink focus:border-accent focus:outline-none";
-export const labelClass = "mb-1 block text-xs tracking-[0.2em] uppercase text-ink-soft";
+  "w-full rounded-md border border-line bg-transparent px-3 py-2.5 font-sans text-sm text-ink transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/50 placeholder:text-ink-soft/50";
+export const labelClass = "mb-1.5 block text-[13px] font-medium text-ink";
 
 export function Field({
   label,
@@ -93,13 +93,18 @@ export function ToggleField({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center justify-between text-sm text-ink">
+    <label className="flex cursor-pointer items-center justify-between text-sm text-ink group py-2">
       {label}
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
+      <div className="relative flex items-center">
+        <input
+          type="checkbox"
+          className="peer sr-only"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <div className="h-5 w-9 rounded-full bg-line transition-colors peer-checked:bg-accent peer-focus-visible:ring-2 peer-focus-visible:ring-accent/50"></div>
+        <div className="absolute left-[2px] h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4"></div>
+      </div>
     </label>
   );
 }
@@ -115,16 +120,16 @@ export function SmallButton({
 }) {
   const toneClass =
     tone === "danger"
-      ? "border-line text-ink-soft hover:border-red-700 hover:text-red-700"
+      ? "border-line text-ink-soft hover:border-red-600 hover:text-red-700 hover:bg-red-50"
       : tone === "accent"
-        ? "border-accent text-accent hover:bg-accent hover:text-ivory"
-        : "border-ink text-ink hover:bg-ink hover:text-ivory";
+        ? "border-accent text-accent hover:bg-accent hover:text-ivory shadow-sm"
+        : "border-line text-ink-soft hover:border-ink hover:text-ink shadow-sm";
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`border px-4 py-2 text-xs uppercase tracking-widest transition-colors ${toneClass}`}
+      className={`rounded-md border mt-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider transition-all hover:-translate-y-[1px] ${toneClass}`}
     >
       {children}
     </button>

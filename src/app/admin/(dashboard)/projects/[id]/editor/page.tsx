@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getEditorData } from "@/lib/wedding-config";
 import { requireSession } from "@/lib/authz";
+import { isProdApp, getSiteDomain } from "@/lib/site";
 import { ProjectEditor } from "./ProjectEditor";
 
 export default async function ProjectEditorPage({
@@ -23,6 +24,9 @@ export default async function ProjectEditorPage({
       initialConfig={data.config}
       initialProjectMeta={data.projectMeta}
       guestbookAll={data.guestbookAll}
+      isProd={isProdApp()}
+      siteDomain={getSiteDomain()}
+      isAdmin={session.user.role === "admin"}
     />
   );
 }

@@ -7,6 +7,7 @@ import { AnimatedHeading } from "@/motion/registry/typography";
 import { AmbientEffect } from "@/motion/registry/ambient";
 import { LandingHeroBackground } from "@/components/LandingHeroBackground";
 import { ContactButton } from "@/components/ContactButton";
+import { getDemoUrl } from "@/lib/site";
 
 const TITLE =
   "Thiệp cưới online đẹp như phim — Tạo website cưới miễn phí trong vài phút";
@@ -328,10 +329,12 @@ export default async function Home() {
                 </div>
               </Link>
             </StaggerItem>
-            {projects.map((project) => (
+            {projects.map((project) => {
+              const demoUrl = getDemoUrl(project.slug);
+              return (
               <StaggerItem key={project.slug} preset="fadeUp">
                 <div className="group">
-                  <Link href={`/wedding/${project.slug}`} className="block">
+                  <Link href={demoUrl} className="block">
                     <div className="relative aspect-[4/5] overflow-hidden bg-ivory-deep shadow-flat transition-shadow duration-500 group-hover:shadow-[0_20px_40px_-16px_rgb(43_38_33_/_0.25)]">
                       {project.coverImage && (
                         <Image
@@ -367,7 +370,7 @@ export default async function Home() {
                   </Link>
                   <div className="flex items-center justify-between border-b border-line pb-4 pt-4 transition-colors group-hover:border-accent">
                     <Link
-                      href={`/wedding/${project.slug}`}
+                      href={demoUrl}
                       className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-ink-soft transition-colors group-hover:text-ink"
                     >
                       Xem demo
@@ -376,14 +379,15 @@ export default async function Home() {
                       </span>
                     </Link>
                     <ContactButton
-                      demoUrl={`/wedding/${project.slug}`}
+                      demoUrl={demoUrl}
                       label="Chi tiết"
                       className="text-xs uppercase tracking-[0.2em] text-ink-soft transition-colors hover:text-ink"
                     />
                   </div>
                 </div>
               </StaggerItem>
-            ))}
+              );
+            })}
           </Stagger>
         </div>
       </section>
