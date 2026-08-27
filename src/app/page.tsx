@@ -12,7 +12,7 @@ import { getDemoUrl } from "@/lib/site";
 const TITLE =
   "Thiệp mời có tên cô dâu chú rể — Thiệp cưới online đẹp như phim";
 const DESCRIPTION =
-  "Wedding Studio giúp bạn tạo thiệp mời cưới online có tên cô dâu chú rể, mang địa chỉ web và tiêu đề riêng của hai bạn, đẹp như phim trong vài phút — không cần biết code. Miễn phí dùng thử, có RSVP, sổ lưu bút, mừng cưới online, nhạc nền, hiệu ứng 3D.";
+  "Wedding Studio Một Đời giúp bạn tạo thiệp mời cưới online có tên cô dâu chú rể, mang địa chỉ web và tiêu đề riêng của hai bạn, đẹp như phim trong vài phút — không cần biết code. Miễn phí dùng thử, có RSVP, sổ lưu bút, mừng cưới online, nhạc nền, hiệu ứng 3D.";
 const KEYWORDS =
   "thiệp mời có tên cô dâu chú rể, thiệp cưới có tên cô dâu chú rể, thiệp mời tên cô dâu chú rể, thiệp cưới in tên, thiệp mời in tên cô dâu chú rể, thiệp cưới ghi tên cô dâu chú rể, mẫu thiệp mời có tên riêng, thiệp mời online, thiệp mời online đẹp, thiệp mời online đẹp nhất, thiệp cưới online, thước phim online, thiệp online, tạo website cưới, thiệp cưới điện tử, mẫu thiệp cưới 3d, thiệp cưới digital, thiệp cưới cá nhân hóa tên";
 
@@ -34,10 +34,10 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
     url: baseUrl,
-    siteName: "Wedding Studio",
+    siteName: "Wedding Studio Một Đời",
     type: "website",
     locale: "vi_VN",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Wedding Studio" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Wedding Studio Một Đời" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -62,7 +62,7 @@ function buildJsonLdGraph(baseUrl: string) {
       {
         "@type": "Organization",
         "@id": `${baseUrl}/#organization`,
-        name: "Wedding Studio",
+        name: "Wedding Studio Một Đời",
         url: baseUrl,
         logo: {
           "@type": "ImageObject",
@@ -73,7 +73,7 @@ function buildJsonLdGraph(baseUrl: string) {
         "@type": "WebSite",
         "@id": `${baseUrl}/#website`,
         url: baseUrl,
-        name: "Wedding Studio",
+        name: "Wedding Studio Một Đời",
         description: DESCRIPTION,
         publisher: { "@id": `${baseUrl}/#organization` },
         inLanguage: "vi-VN",
@@ -108,7 +108,7 @@ function buildJsonLdGraph(baseUrl: string) {
             name: "Làm sao để tạo thiệp mời online đẹp nhất?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Để tạo thiệp mời online đẹp nhất tại Wedding Studio, bạn chỉ cần 3 bước: 1. Chọn mẫu thiệp cưới 3D hoặc giao diện thước phim trực quan. 2. Tải lên album ảnh cưới của bạn và chỉnh sửa thông tin (ngày giờ, địa điểm). 3. Tùy chỉnh nhạc nền, hiệu ứng và xuất bản website cưới để gửi link cho bạn bè.",
+              text: "Để tạo thiệp mời online đẹp nhất tại Wedding Studio Một Đời, bạn chỉ cần 3 bước: 1. Chọn mẫu thiệp cưới 3D hoặc giao diện thước phim trực quan. 2. Tải lên album ảnh cưới của bạn và chỉnh sửa thông tin (ngày giờ, địa điểm). 3. Tùy chỉnh nhạc nền, hiệu ứng và xuất bản website cưới để gửi link cho bạn bè.",
             },
           },
           {
@@ -116,7 +116,7 @@ function buildJsonLdGraph(baseUrl: string) {
             name: "Thiệp online có những tính năng gì nổi bật?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Các mẫu thiệp mời online tại Wedding Studio tích hợp sẵn nhiều tính năng thông minh bao gồm: form RSVP xác nhận tham dự tự động, sổ lưu bút kỹ thuật số, mã QR mừng cưới online, tích hợp Google Maps chỉ đường, và hiệu ứng cuộn trang sống động như một thước phim điện ảnh.",
+              text: "Các mẫu thiệp mời online tại Wedding Studio Một Đời tích hợp sẵn nhiều tính năng thông minh bao gồm: form RSVP xác nhận tham dự tự động, sổ lưu bút kỹ thuật số, mã QR mừng cưới online, tích hợp Google Maps chỉ đường, và hiệu ứng cuộn trang sống động như một thước phim điện ảnh.",
             },
           },
           {
@@ -124,7 +124,7 @@ function buildJsonLdGraph(baseUrl: string) {
             name: "Website cưới có địa chỉ riêng mang tên cô dâu chú rể không?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Có. Mỗi thiệp cưới online tại Wedding Studio được cấp một địa chỉ web (subdomain) riêng đặt theo tên cô dâu chú rể, ví dụ tien-minh.motdoi.click, giúp khách mời dễ nhớ và bạn chỉ cần copy link để gửi qua Zalo, Messenger hay in lên thiệp giấy.",
+              text: "Có. Mỗi thiệp cưới online tại Wedding Studio Một Đời được cấp một địa chỉ web (subdomain) riêng đặt theo tên cô dâu chú rể, ví dụ tien-minh.motdoi.click, giúp khách mời dễ nhớ và bạn chỉ cần copy link để gửi qua Zalo, Messenger hay in lên thiệp giấy.",
             },
           },
           {
@@ -132,7 +132,7 @@ function buildJsonLdGraph(baseUrl: string) {
             name: "Thiệp mời có tên cô dâu chú rể không?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Có. Toàn bộ thiệp mời tại Wedding Studio đều tự động in tên cô dâu chú rể ở tiêu đề, màn hình mở đầu, phần đếm ngược và lời cảm ơn — không phải mẫu thiệp chung chung. Bạn chỉ cần điền tên một lần, hệ thống tự động hiển thị xuyên suốt toàn bộ thiệp mời.",
+              text: "Có. Toàn bộ thiệp mời tại Wedding Studio Một Đời đều tự động in tên cô dâu chú rể ở tiêu đề, màn hình mở đầu, phần đếm ngược và lời cảm ơn — không phải mẫu thiệp chung chung. Bạn chỉ cần điền tên một lần, hệ thống tự động hiển thị xuyên suốt toàn bộ thiệp mời.",
             },
           },
         ],
@@ -141,7 +141,7 @@ function buildJsonLdGraph(baseUrl: string) {
         "@type": "HowTo",
         "@id": `${baseUrl}/#howto`,
         name: "Làm sao để tạo thiệp mời online đẹp nhất",
-        description: "Hướng dẫn chi tiết 3 bước tạo website cưới và thiệp mời online chuyên nghiệp tại Wedding Studio.",
+        description: "Hướng dẫn chi tiết 3 bước tạo website cưới và thiệp mời online chuyên nghiệp tại Wedding Studio Một Đời.",
         step: [
           {
             "@type": "HowToStep",
@@ -175,7 +175,7 @@ function SemanticSEOContent() {
               Nền tảng tạo <span className="text-accent">thiệp mời có tên cô dâu chú rể</span> đẹp nhất
             </h2>
             <p className="text-base text-ink-soft font-serif">
-              Wedding Studio tự hào là công cụ thiết kế website cưới chuyên nghiệp, mang đến trải nghiệm
+              Wedding Studio Một Đời tự hào là công cụ thiết kế website cưới chuyên nghiệp, mang đến trải nghiệm
               tạo <strong>thiệp cưới online</strong> sống động như một <strong>thước phim online</strong>,
               in đúng <strong>tên cô dâu chú rể</strong> xuyên suốt từ tiêu đề, trang bìa đến lời cảm ơn.
               Gửi gắm tình yêu qua từng điểm chạm kỹ thuật số tinh tế, tối ưu hiển thị hoàn hảo trên mọi thiết bị di động.
@@ -223,7 +223,7 @@ function SemanticSEOContent() {
               </div>
               <div className="space-y-2">
                 <h4 className="font-bold text-ink text-base">Có thể dùng thử miễn phí không?</h4>
-                <p>Hoàn toàn có thể. Wedding Studio cho phép bạn tạo, chỉnh sửa và xem trước toàn bộ website cưới hoàn toàn miễn phí trước khi quyết định nâng cấp gói dịch vụ.</p>
+                <p>Hoàn toàn có thể. Wedding Studio Một Đời cho phép bạn tạo, chỉnh sửa và xem trước toàn bộ website cưới hoàn toàn miễn phí trước khi quyết định nâng cấp gói dịch vụ.</p>
               </div>
               <div className="space-y-2">
                 <h4 className="font-bold text-ink text-base">Mất bao lâu để hoàn thiện thiệp?</h4>
@@ -240,7 +240,7 @@ function SemanticSEOContent() {
               <div className="space-y-2">
                 <h4 className="font-bold text-ink text-base">Thiệp mời có tên cô dâu chú rể không?</h4>
                 <p>
-                  Có. Mọi <strong className="text-ink">thiệp mời tại Wedding Studio đều có tên cô dâu chú rể</strong>{" "}
+                  Có. Mọi <strong className="text-ink">thiệp mời tại Wedding Studio Một Đời đều có tên cô dâu chú rể</strong>{" "}
                   tự động hiển thị ở tiêu đề, màn hình mở đầu, đếm ngược ngày cưới và lời cảm ơn — bạn chỉ
                   điền tên một lần duy nhất, không phải mẫu thiệp chung chung như thiệp giấy in sẵn.
                 </p>
@@ -269,7 +269,7 @@ export default async function Home() {
       {/* Top bar */}
       <header className="sticky top-0 z-20 border-b border-line/0 bg-ivory/80 backdrop-blur-md transition-colors">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 md:px-10">
-          <span className="font-script text-2xl text-accent">Wedding Studio</span>
+          <span className="font-script text-2xl text-accent">Wedding Studio Một Đời</span>
           <div className="flex items-center gap-2">
             <ContactButton
               className="border border-ink/0 px-4 py-2 text-xs uppercase tracking-[0.2em] text-ink-soft transition-colors hover:border-line hover:text-ink"
@@ -470,7 +470,7 @@ export default async function Home() {
 
       <footer className="flex items-center justify-center gap-3 border-t border-line px-6 py-8 text-center text-xs text-ink-soft">
         <span className="font-script text-base text-accent">W</span>
-        © {new Date().getFullYear()} Wedding Studio.
+        © {new Date().getFullYear()} Wedding Studio Một Đời.
       </footer>
     </div>
   );

@@ -38,7 +38,7 @@ const script = Great_Vibes({
 // (admin, 404s, etc.) and the base every other page's OG/Twitter tags
 // inherit from unless they override.
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://motdoi.click";
-const SITE_NAME = "Wedding Studio";
+const SITE_NAME = "Wedding Studio Một Đời";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

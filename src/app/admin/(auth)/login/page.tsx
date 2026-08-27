@@ -12,7 +12,7 @@ export default function AdminLoginPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
-        <p className="font-script text-4xl text-accent">Wedding Studio</p>
+        <p className="font-script text-4xl text-accent">Wedding Studio Một Đời</p>
         <p className="mt-1 text-xs tracking-[0.3em] uppercase text-ink-soft">
           Admin
         </p>

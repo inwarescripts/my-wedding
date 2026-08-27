@@ -33,7 +33,7 @@ export default async function AdminDashboardLayout({
     <div className="flex min-h-screen bg-ivory-deep">
       <aside className="flex w-56 flex-shrink-0 flex-col border-r border-line bg-ivory">
         <Link href="/admin" className="px-6 py-6 font-script text-2xl text-accent">
-          Wedding Studio
+          Wedding Studio Một Đời
         </Link>
         <nav className="flex flex-col gap-1 px-3">
           {visibleNav.map((item) => (
