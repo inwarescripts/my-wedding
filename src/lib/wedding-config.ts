@@ -130,6 +130,11 @@ export const getPublishedWeddingConfigBySlug = cache(
       include: projectInclude,
     });
     if (!project || project.status !== "published") return null;
+    // Hard-gone for guests once expired — not just "can't be edited" (that
+    // rule lives in the admin editor's save action). A guest hitting an
+    // expired couple's link should see the same 404 as a slug that never
+    // existed, not a stale snapshot of a lapsed project.
+    if (project.expiredAt && project.expiredAt.getTime() < Date.now()) return null;
     return toWeddingConfig(project);
   }
 );
@@ -195,7 +200,12 @@ export interface ProjectGalleryItem {
  * projects only, newest first. */
 export async function getPublishedProjectsGallery(): Promise<ProjectGalleryItem[]> {
   const projects = await prisma.project.findMany({
-    where: { status: "published" },
+    where: {
+      status: "published",
+      // Same expiry gate as getPublishedWeddingConfigBySlug — an expired
+      // project's detail page 404s, so it shouldn't be listed here either.
+      OR: [{ expiredAt: null }, { expiredAt: { gt: new Date() } }],
+    },
     orderBy: { publishedAt: "desc" },
     include: { couple: true },
   });

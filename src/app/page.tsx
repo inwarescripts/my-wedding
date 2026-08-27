@@ -10,11 +10,11 @@ import { ContactButton } from "@/components/ContactButton";
 import { getDemoUrl } from "@/lib/site";
 
 const TITLE =
-  "Thiệp cưới online đẹp như phim — Tạo website cưới miễn phí trong vài phút";
+  "Thiệp mời có tên cô dâu chú rể — Thiệp cưới online đẹp như phim";
 const DESCRIPTION =
-  "Wedding Studio giúp bạn tạo thiệp mời cưới online, website cưới cá nhân hoá đẹp như phim trong vài phút — không cần biết code. Miễn phí dùng thử, có RSVP, sổ lưu bút, mừng cưới online, nhạc nền, hiệu ứng 3D.";
+  "Wedding Studio giúp bạn tạo thiệp mời cưới online có tên cô dâu chú rể, mang địa chỉ web và tiêu đề riêng của hai bạn, đẹp như phim trong vài phút — không cần biết code. Miễn phí dùng thử, có RSVP, sổ lưu bút, mừng cưới online, nhạc nền, hiệu ứng 3D.";
 const KEYWORDS =
-  "thiệp mời online, thiệp mời online đẹp, thiệp mời online đẹp nhất, thiệp cưới online, thước phim online, thiệp online, tạo website cưới, thiệp cưới điện tử, mẫu thiệp cưới 3d, thiệp cưới digital";
+  "thiệp mời có tên cô dâu chú rể, thiệp cưới có tên cô dâu chú rể, thiệp mời tên cô dâu chú rể, thiệp cưới in tên, thiệp mời in tên cô dâu chú rể, thiệp cưới ghi tên cô dâu chú rể, mẫu thiệp mời có tên riêng, thiệp mời online, thiệp mời online đẹp, thiệp mời online đẹp nhất, thiệp cưới online, thước phim online, thiệp online, tạo website cưới, thiệp cưới điện tử, mẫu thiệp cưới 3d, thiệp cưới digital, thiệp cưới cá nhân hóa tên";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://motdoi.click";
 
@@ -37,11 +37,13 @@ export const metadata: Metadata = {
     siteName: "Wedding Studio",
     type: "website",
     locale: "vi_VN",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Wedding Studio" }],
   },
   twitter: {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
+    images: ["/og-image.png"],
   },
 };
 
@@ -117,6 +119,22 @@ function buildJsonLdGraph(baseUrl: string) {
               text: "Các mẫu thiệp mời online tại Wedding Studio tích hợp sẵn nhiều tính năng thông minh bao gồm: form RSVP xác nhận tham dự tự động, sổ lưu bút kỹ thuật số, mã QR mừng cưới online, tích hợp Google Maps chỉ đường, và hiệu ứng cuộn trang sống động như một thước phim điện ảnh.",
             },
           },
+          {
+            "@type": "Question",
+            name: "Website cưới có địa chỉ riêng mang tên cô dâu chú rể không?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Có. Mỗi thiệp cưới online tại Wedding Studio được cấp một địa chỉ web (subdomain) riêng đặt theo tên cô dâu chú rể, ví dụ tien-minh.motdoi.click, giúp khách mời dễ nhớ và bạn chỉ cần copy link để gửi qua Zalo, Messenger hay in lên thiệp giấy.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Thiệp mời có tên cô dâu chú rể không?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Có. Toàn bộ thiệp mời tại Wedding Studio đều tự động in tên cô dâu chú rể ở tiêu đề, màn hình mở đầu, phần đếm ngược và lời cảm ơn — không phải mẫu thiệp chung chung. Bạn chỉ cần điền tên một lần, hệ thống tự động hiển thị xuyên suốt toàn bộ thiệp mời.",
+            },
+          },
         ],
       },
       {
@@ -154,11 +172,12 @@ function SemanticSEOContent() {
           
           <header className="text-center space-y-4">
             <h2 className="font-heading text-2xl italic text-ink md:text-3xl">
-              Nền tảng tạo <span className="text-accent">thiệp mời online đẹp nhất</span>
+              Nền tảng tạo <span className="text-accent">thiệp mời có tên cô dâu chú rể</span> đẹp nhất
             </h2>
             <p className="text-base text-ink-soft font-serif">
-              Wedding Studio tự hào là công cụ thiết kế website cưới chuyên nghiệp, mang đến trải nghiệm 
-              tạo <strong>thiệp cưới online</strong> sống động như một <strong>thước phim online</strong>. 
+              Wedding Studio tự hào là công cụ thiết kế website cưới chuyên nghiệp, mang đến trải nghiệm
+              tạo <strong>thiệp cưới online</strong> sống động như một <strong>thước phim online</strong>,
+              in đúng <strong>tên cô dâu chú rể</strong> xuyên suốt từ tiêu đề, trang bìa đến lời cảm ơn.
               Gửi gắm tình yêu qua từng điểm chạm kỹ thuật số tinh tế, tối ưu hiển thị hoàn hảo trên mọi thiết bị di động.
             </p>
           </header>
@@ -209,6 +228,22 @@ function SemanticSEOContent() {
               <div className="space-y-2">
                 <h4 className="font-bold text-ink text-base">Mất bao lâu để hoàn thiện thiệp?</h4>
                 <p>Với trình kiến tạo trực quan (Kéo & Thả), bạn không cần biết lập trình. Quá trình thay ảnh và điền thông tin chỉ mất từ 10 đến 15 phút để có một website cưới hoàn chỉnh.</p>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-bold text-ink text-base">Website cưới có địa chỉ riêng mang tên cô dâu chú rể không?</h4>
+                <p>
+                  Có. Mỗi thiệp được cấp riêng 1 địa chỉ dạng{" "}
+                  <strong className="text-ink">tên-cô-dâu-chú-rể.motdoi.click</strong>, dễ nhớ,
+                  dễ đọc — chỉ cần copy và gửi cho bạn bè, khách mời qua Zalo, Messenger hoặc in lên thiệp giấy.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-bold text-ink text-base">Thiệp mời có tên cô dâu chú rể không?</h4>
+                <p>
+                  Có. Mọi <strong className="text-ink">thiệp mời tại Wedding Studio đều có tên cô dâu chú rể</strong>{" "}
+                  tự động hiển thị ở tiêu đề, màn hình mở đầu, đếm ngược ngày cưới và lời cảm ơn — bạn chỉ
+                  điền tên một lần duy nhất, không phải mẫu thiệp chung chung như thiệp giấy in sẵn.
+                </p>
               </div>
             </div>
           </section>
@@ -267,13 +302,20 @@ export default async function Home() {
             variant="wordReveal"
             className="mx-auto mt-4 max-w-3xl font-heading text-4xl italic leading-[1.15] text-ink md:text-6xl"
           >
-            Website cưới đẹp như phim, dựng xong trong vài phút
+            Thiệp mời có tên cô dâu chú rể, đẹp như phim trong vài phút
           </AnimatedHeading>
           <Reveal preset="fadeUp" delay={0.15}>
             <p className="mx-auto mt-6 max-w-xl font-serif text-lg text-ink-soft md:text-xl">
               Chọn một mẫu thiệp, đổi ảnh và nội dung của riêng bạn, rồi gửi cho
               khách mời một trải nghiệm mời cưới trực tuyến mượt mà, tinh tế —
               không cần biết code.
+            </p>
+          </Reveal>
+          <Reveal preset="fadeUp" delay={0.22}>
+            <p className="mx-auto mt-4 max-w-lg font-serif text-ink-soft">
+              Sở hữu ngay địa chỉ web mang tên riêng của hai bạn — ví dụ{" "}
+              <strong className="font-heading text-ink">tiến-minh.motdoi.click</strong>{" "}
+              — chỉ cần copy và gửi cho bạn bè.
             </p>
           </Reveal>
           <Reveal preset="fade" delay={0.3}>
