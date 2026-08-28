@@ -59,31 +59,48 @@ export function AudioPlayer({
         loop={settings.loop}
         preload="none"
       />
-      <button
-        type="button"
-        onClick={toggle}
-        aria-label={playing ? "Tạm dừng nhạc" : "Phát nhạc"}
-        className="flex h-12 w-12 items-center justify-center rounded-full border border-ink/15 bg-ivory/90 text-ink shadow-flat backdrop-blur transition-transform hover:scale-105"
-      >
-        <span className="flex h-4 items-end gap-[3px]">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="w-[3px] rounded-full bg-ink"
-              style={{
-                height: playing ? undefined : "4px",
-                animation: playing
-                  ? `audio-bar 0.9s ease-in-out ${i * 0.15}s infinite`
-                  : "none",
-              }}
-            />
-          ))}
-        </span>
-      </button>
+      <div className="relative">
+        {/* A soft pulsing halo behind the button while music is playing —
+            same "glowing, theme-tinted ring" vocabulary as DreamyMist/
+            PetalMarks elsewhere, so this reads as "now playing" at a
+            glance instead of just a static icon swap. */}
+        {playing && <span className="audio-halo pointer-events-none absolute inset-0 rounded-full bg-accent-soft" />}
+
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={playing ? "Tạm dừng nhạc" : "Phát nhạc"}
+          className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent-soft bg-ivory/95 text-accent shadow-flat backdrop-blur transition-transform hover:scale-105"
+        >
+          <span className="pointer-events-none absolute inset-[3px] rounded-full border border-gold/40" />
+          {playing ? (
+            <span className="flex h-4 items-end gap-[3px]">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="w-[3px] rounded-full bg-accent"
+                  style={{ animation: `audio-bar 0.9s ease-in-out ${i * 0.15}s infinite` }}
+                />
+              ))}
+            </span>
+          ) : (
+            <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4 fill-accent">
+              <path d="M6 4.5v15l14-7.5-14-7.5Z" />
+            </svg>
+          )}
+        </button>
+      </div>
       <style>{`
         @keyframes audio-bar {
           0%, 100% { height: 4px; }
           50% { height: 14px; }
+        }
+        @keyframes audio-halo {
+          0% { transform: scale(0.85); opacity: 0.45; }
+          100% { transform: scale(1.55); opacity: 0; }
+        }
+        .audio-halo {
+          animation: audio-halo 1.8s ease-out infinite;
         }
       `}</style>
     </div>

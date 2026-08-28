@@ -271,6 +271,12 @@ export default async function Home() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 md:px-10">
           <span className="font-script text-2xl text-accent">Wedding Studio Một Đời</span>
           <div className="flex items-center gap-2">
+            <Link
+              href="/cam-nang-cuoi"
+              className="border border-ink/0 px-4 py-2 text-xs uppercase tracking-[0.2em] text-ink-soft transition-colors hover:border-line hover:text-ink"
+            >
+              Cẩm nang cưới
+            </Link>
             <ContactButton
               className="border border-ink/0 px-4 py-2 text-xs uppercase tracking-[0.2em] text-ink-soft transition-colors hover:border-line hover:text-ink"
             />
@@ -439,6 +445,24 @@ export default async function Home() {
               );
             })}
           </Stagger>
+        </div>
+      </section>
+
+      {/* Pricing note */}
+      <section className="border-t border-line bg-ivory px-6 py-12 text-center md:py-14">
+        <div className="mx-auto max-w-2xl">
+          <p className="font-serif text-base leading-relaxed text-ink-soft md:text-lg">
+            Giá đã bao gồm <strong className="font-heading text-ink">toàn bộ mẫu thiệp</strong> — bạn có thể
+            tuỳ ý đổi mẫu, chỉnh sửa nội dung, hình ảnh và hiệu ứng theo sở thích riêng. Hãy{" "}
+            <strong className="font-heading text-ink">liên hệ qua Zalo</strong> để admin tạo tài khoản cho bạn
+            chỉnh sửa nhanh chóng.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <ContactButton
+              label="Liên hệ Zalo"
+              className="inline-flex items-center gap-2 border border-ink bg-ink px-8 py-3 text-xs uppercase tracking-[0.2em] text-ivory transition-opacity hover:opacity-85"
+            />
+          </div>
         </div>
       </section>
 

@@ -165,14 +165,14 @@ function Dragons({ entering }: { entering: boolean }) {
 
   return (
     <>
-      <group ref={left} position={[-1.35, -0.35, -3.2]} rotation={[0, 0.15, 0]}>
+      <group ref={left} position={[-1.2, -0.35, -2.6]} rotation={[0, 0.15, 0]}>
         <ErrorBoundary fallback={null}>
-          <DreiImage url="/flower/dragon_left.webp" scale={[1.1, 1.5]} transparent opacity={0.3} />
+          <DreiImage url="/flower/dragon_left.webp" scale={[1.6, 2.15]} transparent opacity={0.42} />
         </ErrorBoundary>
       </group>
-      <group ref={right} position={[1.35, -0.35, -3.2]} rotation={[0, -0.15, 0]}>
+      <group ref={right} position={[1.2, -0.35, -2.6]} rotation={[0, -0.15, 0]}>
         <ErrorBoundary fallback={null}>
-          <DreiImage url="/flower/dragon_right.webp" scale={[1.1, 1.5]} transparent opacity={0.3} />
+          <DreiImage url="/flower/dragon_right.webp" scale={[1.6, 2.15]} transparent opacity={0.42} />
         </ErrorBoundary>
       </group>
     </>
