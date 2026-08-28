@@ -21,7 +21,8 @@ export type ColorTheme =
   | "terracottaSun"
   | "burgundy"
   | "navy"
-  | "midnightGold";
+  | "midnightGold"
+  | "crimsonFestive";
 
 export const colorThemeRegistry: Record<ColorTheme, { label: string; colors: ColorThemePalette }> = {
   classic: {
@@ -152,6 +153,25 @@ export const colorThemeRegistry: Record<ColorTheme, { label: string; colors: Col
       accentSoft: "#8a7028",
       line: "#3a3644",
       gold: "#d8b464",
+    },
+  },
+  // Same "flip" as midnightGold — `ivory` (the page background) becomes
+  // the dominant colour instead of staying a neutral backdrop, so this one
+  // reads as a fully red-and-gold festive theme (think the classic red
+  // Chinese/Vietnamese wedding invitation) rather than "ivory site with a
+  // red accent". `ink`/`inkSoft` swap to warm gold/cream so body text
+  // stays legible on the red background.
+  crimsonFestive: {
+    label: "Đỏ chói hỷ sự",
+    colors: {
+      ivory: "#7a0f16",
+      ivoryDeep: "#5c0c11",
+      ink: "#f5e3b8",
+      inkSoft: "#d9bd8a",
+      accent: "#d4af37",
+      accentSoft: "#9c7a2e",
+      line: "#8a2028",
+      gold: "#e0b74a",
     },
   },
 };

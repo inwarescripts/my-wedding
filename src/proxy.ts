@@ -3,7 +3,22 @@ import { auth } from "@/lib/auth";
 
 const ROOT_DOMAIN = "motdoi.click";
 
+// A dot in the last path segment (`/flower/chu-hy.webp`, `/og-image.png`)
+// means a static file under `public/` — the matcher below only excludes
+// Next's OWN asset routes (_next/static, _next/image, favicon.ico,
+// icon.png), so anything else in `public/` was falling through to the
+// subdomain rewrite below and getting served the wedding page's HTML
+// instead of the actual file. That's why every /flower/* image 404'd (well,
+// silently swapped) on a project subdomain but worked fine on the root
+// domain, where nothing gets rewritten.
+const STATIC_FILE = /\.[^/]+$/;
+
 export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  if (STATIC_FILE.test(pathname)) {
+    return NextResponse.next();
+  }
+
   const hostname = (req.headers.get("host") || "").split(":")[0].toLowerCase();
   const isRootDomain = hostname === ROOT_DOMAIN || hostname === `www.${ROOT_DOMAIN}`;
   const isProjectSubdomain = !isRootDomain && hostname.endsWith(`.${ROOT_DOMAIN}`);
@@ -21,7 +36,6 @@ export default auth((req) => {
 
   const isLoggedIn = !!req.auth?.user;
   const isAdmin = req.auth?.user?.role === "admin";
-  const { pathname } = req.nextUrl;
 
   if (!pathname.startsWith("/admin")) {
     return NextResponse.next();

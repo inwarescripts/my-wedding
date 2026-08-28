@@ -29,6 +29,7 @@ import { scheduleIconRegistry, ScheduleIcon } from "@/motion/registry/scheduleIc
 import { familyRegistry } from "@/motion/registry/family";
 import { gallery3dRegistry } from "@/motion/registry/gallery3d";
 import { timelineRegistry } from "@/motion/registry/timeline";
+import { countdownRegistry } from "@/motion/registry/countdown";
 import { typographyRegistry } from "@/motion/registry/typography";
 import { transitionRegistry } from "@/motion/registry/transition";
 import { ambientEffectRegistry } from "@/motion/registry/ambient";
@@ -656,9 +657,19 @@ export function ProjectEditor({
         );
       case "countdown":
         return (
-          <p className="text-sm text-ink-soft">
-            Đếm ngược tự động tính theo ngày cưới ở mục {FRAME_LABELS.hero}.
-          </p>
+          <>
+            <p className="text-sm text-ink-soft">
+              Đếm ngược tự động tính theo ngày cưới ở mục {FRAME_LABELS.hero}.
+            </p>
+            <div className="pt-2">
+              <p className={labelClass}>Kiểu đếm ngược</p>
+              <VariantPicker
+                registry={countdownRegistry}
+                value={frame.variant ?? "classic"}
+                onChange={(v) => selectVariant(frame.id, v)}
+              />
+            </div>
+          </>
         );
       case "map":
         return (

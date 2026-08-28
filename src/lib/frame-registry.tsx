@@ -18,7 +18,7 @@ import { Story } from "@/components/frames/Story";
 import { Family } from "@/components/frames/Family";
 import { Events } from "@/components/frames/Events";
 import { Schedule } from "@/components/frames/Schedule";
-import { Countdown } from "@/components/frames/Countdown";
+import { CountdownVariant } from "@/motion/registry/countdown";
 import { MapFrame } from "@/components/frames/MapFrame";
 import { RSVP } from "@/components/frames/RSVP";
 import { Guestbook } from "@/components/frames/Guestbook";
@@ -81,10 +81,11 @@ export function renderFrame(frame: FrameConfig, ctx: RenderFrameContext) {
       return <Schedule content={frame.content as ScheduleContent} bowStyle={ctx.bowStyle} />;
     case "countdown":
       return (
-        <Countdown
+        <CountdownVariant
           weddingDate={ctx.couple.weddingDate}
           weddingDateLunar={ctx.couple.weddingDateLunar}
           bowStyle={ctx.bowStyle}
+          variant={frame.variant}
         />
       );
     case "map":

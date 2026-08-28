@@ -40,4 +40,5 @@ export const DEFAULT_VARIANT: Partial<Record<FrameType, string>> = {
   photoStack: "floatingPhotos",
   timeline: "alternating",
   family: "simple",
+  countdown: "classic",
 };
