@@ -70,7 +70,16 @@ function Lightbox({
           className="fixed inset-0 z-50 flex items-center justify-center bg-ink/90 p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          // `pointerEvents: "none"` the instant the close animation starts
+          // (not just once it finishes) — AnimatePresence keeps this
+          // full-screen overlay mounted, still catching every tap, for its
+          // whole ~0.3s fade-out. Without this, a guest tapping a *next*
+          // photo right after closing this one — completely normal when
+          // browsing quickly on a phone — lands on the still-closing
+          // overlay instead of the photo underneath, and nothing opens.
+          // Rarely hit with a mouse, where clicks land further apart in
+          // time; this is the mobile-only "ảnh không mở" bug.
+          exit={{ opacity: 0, pointerEvents: "none" }}
           onClick={onClose}
         >
           <motion.div

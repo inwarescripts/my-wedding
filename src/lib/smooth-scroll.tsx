@@ -31,6 +31,15 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
 
     if (!registered) {
       gsap.registerPlugin(ScrollTrigger);
+      // GSAP's own documented fix for scroll-linked animations jumping/
+      // stuttering on mobile: by default ScrollTrigger re-measures every
+      // trigger on any window `resize`, and a phone's browser chrome
+      // (address bar) hiding/showing *while the guest scrolls* fires
+      // exactly that — mid-scroll, mid-auto-tour. Ignoring resizes that
+      // are only a viewport-height change (not an actual orientation/
+      // width change) keeps ScrollTrigger from re-syncing against a scroll
+      // position that's still moving.
+      ScrollTrigger.config({ ignoreMobileResize: true });
       registered = true;
     }
 
