@@ -343,6 +343,16 @@ function EnvelopeOverlay({ entering }: { entering: boolean }) {
       <div className="envelope-lid absolute inset-0 overflow-hidden rounded-2xl shadow-[0_16px_36px_rgba(0,0,0,0.5)]">
         <div className="envelope-lid-sheen pointer-events-none absolute inset-0" />
         <div className="pointer-events-none absolute inset-1.5 rounded-xl border border-[#d4af37]/45" />
+        {/* The lid below the seal was just plain brocade — a lot of bare
+            space on a small card. A watercolour floral heart wreath fills
+            that gap without competing with the seal for attention. */}
+        <Image
+          src="/flower/heart.png"
+          alt=""
+          width={200}
+          height={200}
+          className="pointer-events-none absolute left-1/2 top-[42%] h-44 w-44 -translate-x-1/2 -translate-y-1/2 object-contain opacity-90 md:top-[46%] md:h-56 md:w-56"
+        />
       </div>
 
       <motion.div
@@ -380,6 +390,50 @@ function EnvelopeOverlay({ entering }: { entering: boolean }) {
         }
       `}</style>
     </motion.div>
+  );
+}
+
+// `displayName` is free-typed by the admin as "Bride & Groom" — plain text
+// wrapping breaks at ANY space, so a long name like "Hoa Quyên Trần & Tuấn
+// Anh Nguyễn" could split mid-name ("Hoa Quyên / Trần & Tuấn / Anh
+// Nguyễn") instead of at the "&". Keeping each side's `whitespace-nowrap`
+// forces the only wrap point (if it doesn't fit one line) to be between
+// the two names. Falls back to the raw string unchanged if it isn't in
+// that two-part "A & B" shape.
+// `whitespace-nowrap` alone would just push a long name off-screen instead
+// of breaking it — the script typeface is wide, so the font size also has
+// to shrink as the longer of the two names grows, or "Hoa Quyên Trần" at
+// the default text-8xl simply runs past the edge of a phone screen.
+function coupleNameSizeClass(longestPart: number) {
+  if (longestPart > 18) return "text-2xl md:text-4xl";
+  if (longestPart > 14) return "text-3xl md:text-5xl";
+  if (longestPart > 10) return "text-4xl md:text-6xl";
+  return "text-6xl md:text-8xl";
+}
+
+function CoupleDisplayName({ displayName }: { displayName: string }) {
+  const parts = displayName.split(" & ");
+  if (parts.length !== 2) {
+    return (
+      <span className={`${coupleNameSizeClass(displayName.length)} leading-none`}>
+        {displayName}
+      </span>
+    );
+  }
+  const sizeClass = coupleNameSizeClass(Math.max(parts[0].length, parts[1].length));
+  return (
+    <span
+      className={`inline-flex flex-col items-center gap-1 leading-tight md:flex-row md:flex-wrap md:items-baseline md:justify-center md:gap-x-3 md:gap-y-1 ${sizeClass}`}
+    >
+      <span className="whitespace-nowrap">{parts[0]}</span>
+      {/* Its own line and noticeably smaller on mobile — at the same size
+          as the names it reads as a third, oddly-sized word squeezed
+          between them; desktop has the width to keep it inline instead. */}
+      <span aria-hidden className="text-[0.45em] md:text-[1em]">
+        &amp;
+      </span>
+      <span className="whitespace-nowrap">{parts[1]}</span>
+    </span>
   );
 }
 
@@ -552,8 +606,8 @@ export function Opening({
           </span>
 
           <div className="relative">
-            <span className="font-script text-6xl md:text-8xl leading-none">
-              {couple.displayName}
+            <span className="font-script">
+              <CoupleDisplayName displayName={couple.displayName} />
             </span>
 
             <span className="mt-2 flex items-center gap-4 text-sm tracking-widest text-ivory/85 md:text-base">

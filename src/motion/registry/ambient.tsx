@@ -11,7 +11,10 @@ export type AmbientVariant =
   | "mist"
   | "fireworks"
   | "roses"
-  | "hearts";
+  | "hearts"
+  | "dryIce"
+  | "balloonDrop"
+  | "flowerShower";
 
 export const ambientEffectRegistry: Record<AmbientVariant, { label: string }> = {
   none: { label: "Không có" },
@@ -23,6 +26,9 @@ export const ambientEffectRegistry: Record<AmbientVariant, { label: string }> = 
   fireworks: { label: "Pháo hoa rực rỡ" },
   roses: { label: "Hoa hồng rơi" },
   hearts: { label: "Trái tim bay" },
+  dryIce: { label: "Khói lạnh (Dry Ice)" },
+  balloonDrop: { label: "Bóng bay & bong bóng ánh sáng" },
+  flowerShower: { label: "Mưa cánh hoa rực rỡ" },
 };
 
 function randomBetween(min: number, max: number) {
@@ -167,6 +173,12 @@ export function AmbientEffect({ variant }: { variant: string }) {
       return <Roses />;
     case "hearts":
       return <Hearts />;
+    case "dryIce":
+      return <DryIce />;
+    case "balloonDrop":
+      return <BalloonDrop />;
+    case "flowerShower":
+      return <FlowerShower />;
     default:
       return null;
   }
@@ -573,6 +585,9 @@ export const AMBIENT_BURST_DURATION_MS: Record<AmbientVariant, number> = {
   fireworks: 6600,
   roses: 8200,
   hearts: 7650,
+  dryIce: 5000,
+  balloonDrop: 6800,
+  flowerShower: 6100,
 };
 
 /**
@@ -607,6 +622,12 @@ export function AmbientBurst({
       return <RosesBurst triggerKey={triggerKey} />;
     case "hearts":
       return <HeartsBurst triggerKey={triggerKey} />;
+    case "dryIce":
+      return <DryIceBurst triggerKey={triggerKey} />;
+    case "balloonDrop":
+      return <BalloonDropBurst triggerKey={triggerKey} />;
+    case "flowerShower":
+      return <FlowerShowerBurst triggerKey={triggerKey} />;
     default:
       return null;
   }
@@ -1351,6 +1372,646 @@ function HeartsBurst({ triggerKey }: { triggerKey: number | null }) {
           100% { transform: translate3d(var(--heart-drift), -125vh, 0) scale(0.9); opacity: 0; }
         }
       `}</style>
+    </div>
+  );
+}
+
+/** Low, ground-hugging cold fog banks drifting side to side near the
+ * bottom of the screen — "khói đá khô" rolling across a stage floor.
+ * Deliberately distinct from Mist (which drifts loosely across the WHOLE
+ * viewport, any height): anchored low (`top` stays in the bottom quarter),
+ * flatter (squashed ellipses), cooler-toned, and denser. Half the banks
+ * drift rightward and half leftward (alternating by index) so they weave
+ * past each other instead of the whole layer marching one direction. */
+function DryIce() {
+  const banks = useClientItems(() =>
+    Array.from({ length: 7 }, (_, i) => ({
+      id: i,
+      top: randomBetween(72, 94),
+      size: randomBetween(260, 480),
+      duration: randomBetween(20, 32),
+      delay: randomBetween(0, 18),
+      rightward: i % 2 === 0,
+      bob: randomBetween(6, 16),
+    }))
+  );
+
+  if (banks.length === 0) return null;
+
+  return (
+    <div className={OVERLAY_CLASS} aria-hidden>
+      {banks.map((b) => (
+        <span
+          key={b.id}
+          className={`absolute block rounded-full opacity-0 ${
+            b.rightward ? "left-[-35%]" : "right-[-35%]"
+          }`}
+          style={
+            {
+              top: `${b.top}%`,
+              width: b.size,
+              height: b.size * 0.34,
+              // Neutral "smoke white" (grey, not blue-tinted) — real dry
+              // ice reads as a plain pale grey haze, and the earlier blue
+              // cast looked more like a cooling-mist effect than smoke.
+              // Still graded from near-white core to a soft grey rim so it
+              // keeps a visible body over the site's own near-white ivory
+              // background, rather than just barely tinting the page.
+              background:
+                "radial-gradient(ellipse, rgba(255,255,255,0.85) 0%, rgba(232,232,229,0.55) 40%, rgba(205,204,199,0.22) 68%, rgba(205,204,199,0) 85%)",
+              boxShadow: "0 10px 40px 10px rgba(180,178,172,0.25)",
+              filter: "blur(20px)",
+              animation: `wedding-dryice-roll-${b.rightward ? "r" : "l"} ${b.duration}s ease-in-out ${b.delay}s infinite`,
+              "--dryice-bob": `${b.bob}px`,
+            } as CSSProperties
+          }
+        />
+      ))}
+      <style>{`
+        @keyframes wedding-dryice-roll-r {
+          0% { transform: translate3d(0, 0, 0); opacity: 0; }
+          10% { opacity: 0.95; }
+          50% { transform: translate3d(70vw, calc(var(--dryice-bob) * -1), 0); }
+          90% { opacity: 0.75; }
+          100% { transform: translate3d(140vw, 0, 0); opacity: 0; }
+        }
+        @keyframes wedding-dryice-roll-l {
+          0% { transform: translate3d(0, 0, 0); opacity: 0; }
+          10% { opacity: 0.95; }
+          50% { transform: translate3d(-70vw, var(--dryice-bob), 0); }
+          90% { opacity: 0.75; }
+          100% { transform: translate3d(-140vw, 0, 0); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/** The gate-entry moment: a thick bank billows in from both sides at once
+ * and climbs, instead of the persistent version's slow, thin, low roll —
+ * reads as the fog machine "phun mạnh" (firing hard) right as the guest
+ * steps in, then clearing. */
+function DryIceBurst({ triggerKey }: { triggerKey: number | null }) {
+  const banks = useBurst(
+    triggerKey,
+    () =>
+      Array.from({ length: 14 }, (_, i) => ({
+        id: i,
+        top: randomBetween(55, 94),
+        size: randomBetween(300, 560),
+        duration: randomBetween(2.8, 3.8),
+        delay: randomBetween(0, 0.7),
+        rightward: i % 2 === 0,
+        bob: randomBetween(8, 20),
+      })),
+    // Worst case 3.8s duration + 0.7s delay + buffer — same TTL-headroom
+    // reasoning as the burst effects above (see PetalBurst's comment).
+    5000
+  );
+
+  if (banks.length === 0) return null;
+
+  return (
+    <div className={OVERLAY_CLASS} aria-hidden>
+      {banks.map((b) => (
+        <span
+          key={b.id}
+          className={`absolute block rounded-full opacity-0 ${
+            b.rightward ? "left-[-35%]" : "right-[-35%]"
+          }`}
+          style={
+            {
+              top: `${b.top}%`,
+              width: b.size,
+              height: b.size * 0.34,
+              background:
+                "radial-gradient(ellipse, rgba(255,255,255,0.92) 0%, rgba(232,232,229,0.65) 40%, rgba(205,204,199,0.28) 68%, rgba(205,204,199,0) 85%)",
+              boxShadow: "0 10px 44px 12px rgba(180,178,172,0.3)",
+              filter: "blur(22px)",
+              animation: `wedding-dryice-billow-${b.rightward ? "r" : "l"} ${b.duration}s ease-out ${b.delay}s 1`,
+              "--dryice-bob": `${b.bob}px`,
+            } as CSSProperties
+          }
+        />
+      ))}
+      <style>{`
+        @keyframes wedding-dryice-billow-r {
+          0% { transform: translate3d(0, 10vh, 0) scale(0.7); opacity: 0; }
+          20% { opacity: 0.9; }
+          60% { transform: translate3d(55vw, calc(var(--dryice-bob) * -1), 0) scale(1.1); opacity: 0.7; }
+          100% { transform: translate3d(110vw, -8vh, 0) scale(1.25); opacity: 0; }
+        }
+        @keyframes wedding-dryice-billow-l {
+          0% { transform: translate3d(0, 10vh, 0) scale(0.7); opacity: 0; }
+          20% { opacity: 0.9; }
+          60% { transform: translate3d(-55vw, var(--dryice-bob), 0) scale(1.1); opacity: 0.7; }
+          100% { transform: translate3d(-110vw, -8vh, 0) scale(1.25); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// Soft pastel spread (not a full rainbow), moderate saturation/lightness
+// so the balloons read as "wedding", not a kids' birthday party — and
+// don't look oversaturated/muddy the way the old hue-rotated 🎈 emoji did.
+const BALLOON_HUES = [340, 25, 200, 265, 42];
+
+function balloonPieces(count: number) {
+  return Array.from({ length: count }, (_, i) => {
+    // ~1 in 5 balloons pops partway through its fall instead of landing —
+    // a real balloon drop always has a few that don't survive.
+    const pop = Math.random() < 0.22;
+    // Real balloon-net drops mix noticeably big and small balloons, not a
+    // narrow band all reading as roughly the same size — big ones also
+    // drift a little slower/heavier and sway a little wider, matching
+    // more air resistance on a bigger surface.
+    const size = randomBetween(22, 76);
+    const sizeT = (size - 22) / (76 - 22); // 0 (smallest) .. 1 (biggest)
+    return {
+      id: i,
+      left: randomBetween(4, 96),
+      size,
+      hue: BALLOON_HUES[i % BALLOON_HUES.length],
+      duration: randomBetween(4.2, 6.4) + sizeT * 2.2,
+      delay: randomBetween(0, 1.4),
+      sway: randomBetween(26, 60) + sizeT * 18,
+      // A real bouquet is a mix — plain balloons and a few tied with a
+      // ribbon, not every single one. Also varies the body a touch
+      // rounder/narrower/more egg-shaped per balloon instead of one
+      // identical mould.
+      hasBow: Math.random() < 0.45,
+      bodyHeight: randomBetween(52, 62),
+      bodyWidth: randomBetween(74, 88),
+      pop,
+      // Small, tight radial burst (not a firework-sized one) — reused via
+      // fireworkSparks so the fragments fly out at even, jittered angles
+      // instead of a hand-rolled set of fixed directions.
+      fragments: pop ? fireworkSparks(24, 6, 16) : [],
+    };
+  });
+}
+
+/** A hand-built glossy balloon — real "quả" volume via an off-centre
+ * highlight + darker rim (not a flat colour dot), a knotted tip, a thin
+ * curling string, and (on about half of them) a small ribbon "nơ" tied
+ * where the string starts — instead of a single hue-rotated 🎈 glyph,
+ * which is why the old version read as flat/oversaturated. `--hue`/
+ * `--balloon-sway` are set once on the outer (unanimated) layout span and
+ * inherited by every child below, since CSS custom properties cascade
+ * normally. */
+function renderBalloons(items: ReturnType<typeof balloonPieces>) {
+  return items.map((b) => {
+    const anim = b.pop
+      ? `wedding-balloon-pop-track ${b.duration}s ease-in ${b.delay}s 1, wedding-balloon-pop-fade ${b.duration}s ease-in ${b.delay}s 1`
+      : `wedding-balloon-fall ${b.duration}s ease-in ${b.delay}s 1`;
+
+    return (
+    <span
+      key={b.id}
+      // No opacity-0 here, unlike the other effects' single animated span
+      // — visibility is now delegated entirely to each child's own opacity
+      // keyframe (see BALLOON_KEYFRAMES), since a static opacity on this
+      // parent would multiply against every child and hide them all.
+      className="absolute top-[-14%] block"
+      style={
+        {
+          left: `${b.left}%`,
+          width: b.size,
+          height: b.size * 1.7,
+          "--hue": b.hue,
+          "--balloon-sway": `${b.sway}px`,
+          "--balloon-body-h": `${b.bodyHeight}%`,
+          "--balloon-body-w": `${b.bodyWidth}%`,
+        } as CSSProperties
+      }
+    >
+      <span className="wedding-balloon-body" style={{ animation: anim }} />
+      <span className="wedding-balloon-knot" style={{ animation: anim }} />
+      <span className="wedding-balloon-string" style={{ animation: anim }} />
+      {b.hasBow && (
+        <>
+          <span
+            className="wedding-balloon-bow-wing wedding-balloon-bow-wing-l"
+            style={{ animation: anim }}
+          />
+          <span
+            className="wedding-balloon-bow-wing wedding-balloon-bow-wing-r"
+            style={{ animation: anim }}
+          />
+          <span className="wedding-balloon-bow-knot" style={{ animation: anim }} />
+        </>
+      )}
+      {b.pop && (
+        <>
+          <span
+            className="wedding-balloon-flash"
+            style={{ animation: `wedding-balloon-pop-flash ${b.duration}s ease-in ${b.delay}s 1` }}
+          />
+          {b.fragments.map((f) => (
+            <span
+              key={f.i}
+              className="wedding-balloon-fragment"
+              style={
+                {
+                  animation: `wedding-balloon-pop-fragment ${b.duration}s ease-in ${b.delay}s 1`,
+                  "--fx": `${f.sx}px`,
+                  "--fy": `${f.sy}px`,
+                } as CSSProperties
+              }
+            />
+          ))}
+        </>
+      )}
+    </span>
+    );
+  });
+}
+
+const BALLOON_KEYFRAMES = `
+  .wedding-balloon-body {
+    position: absolute;
+    top: 0;
+    left: calc((100% - var(--balloon-body-w, 80%)) / 2);
+    width: var(--balloon-body-w, 80%);
+    height: var(--balloon-body-h, 55%);
+    border-radius: 50% 50% 48% 48% / 58% 58% 42% 42%;
+    /* Two layered gradients: a small crisp specular dot (real glossy
+       plastic/latex has a tight sharp glint, not just a broad soft sheen)
+       on top of the main soft-shaded sphere gradient underneath. */
+    background:
+      radial-gradient(circle at 27% 21%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 9%),
+      radial-gradient(circle at 32% 26%,
+        rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.35) 12%,
+        hsl(var(--hue) 62% 60%) 38%, hsl(var(--hue) 56% 46%) 76%,
+        hsl(var(--hue) 50% 34%) 100%);
+    box-shadow: inset -5px -8px 12px rgba(0,0,0,0.2), 0 3px 8px rgba(0,0,0,0.16);
+    opacity: 0;
+  }
+  .wedding-balloon-knot {
+    position: absolute;
+    top: calc(var(--balloon-body-h, 55%) - 3%);
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid hsl(var(--hue) 50% 34%);
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+  .wedding-balloon-string {
+    position: absolute;
+    top: calc(var(--balloon-body-h, 55%) + 3%);
+    left: 50%;
+    width: 1.5px;
+    height: 20%;
+    background: rgba(120,108,96,0.55);
+    opacity: 0;
+  }
+  /* A rounded "petal" (one square corner via asymmetric border-radius)
+     rotated away from centre on each side reads as a soft ribbon loop —
+     much smoother than a sharp clip-path flag shape at this size. */
+  .wedding-balloon-bow-wing {
+    position: absolute;
+    top: calc(var(--balloon-body-h, 55%) + 20%);
+    width: 15%;
+    height: 11%;
+    background: hsl(var(--hue) 60% 52%);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+    border-radius: 50% 50% 50% 4%;
+    opacity: 0;
+  }
+  .wedding-balloon-bow-wing-l {
+    left: 32%;
+    transform: rotate(-42deg);
+  }
+  .wedding-balloon-bow-wing-r {
+    left: 53%;
+    transform: rotate(42deg) scaleX(-1);
+  }
+  .wedding-balloon-bow-knot {
+    position: absolute;
+    top: calc(var(--balloon-body-h, 55%) + 20%);
+    left: 46%;
+    width: 8%;
+    height: 8%;
+    background: hsl(var(--hue) 52% 42%);
+    border-radius: 50%;
+    opacity: 0;
+  }
+  .wedding-balloon-flash {
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    width: 80%;
+    height: 45%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, hsl(var(--hue) 85% 78% / 0.65) 45%, transparent 75%);
+    opacity: 0;
+  }
+  .wedding-balloon-fragment {
+    position: absolute;
+    top: 45%;
+    left: 46%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: hsl(var(--hue) 68% 62%);
+    box-shadow: 0 0 6px 2px hsl(var(--hue) 68% 58% / 0.7);
+    opacity: 0;
+  }
+  @keyframes wedding-balloon-fall {
+    0% { transform: translate3d(0, -14vh, 0) rotate(0deg); opacity: 0; }
+    8% { opacity: 0.95; }
+    25% { transform: translate3d(calc(var(--balloon-sway) * 1), 22vh, 0) rotate(6deg); }
+    50% { transform: translate3d(calc(var(--balloon-sway) * -1), 48vh, 0) rotate(-6deg); }
+    75% { transform: translate3d(calc(var(--balloon-sway) * 0.6), 74vh, 0) rotate(4deg); }
+    92% { opacity: 0.9; }
+    100% { transform: translate3d(0, 106vh, 0) rotate(0deg); opacity: 0; }
+  }
+  @keyframes wedding-balloon-pop-track {
+    0% { transform: translate3d(0, -14vh, 0) rotate(0deg); }
+    25% { transform: translate3d(calc(var(--balloon-sway) * 1), 22vh, 0) rotate(6deg); }
+    50% { transform: translate3d(calc(var(--balloon-sway) * -1), 48vh, 0) rotate(-6deg); }
+    62%, 100% { transform: translate3d(calc(var(--balloon-sway) * -0.3), 58vh, 0) rotate(-2deg); }
+  }
+  @keyframes wedding-balloon-pop-fade {
+    0% { opacity: 0; }
+    8% { opacity: 0.95; }
+    58% { opacity: 0.95; }
+    62% { opacity: 1; }
+    67%, 100% { opacity: 0; }
+  }
+  @keyframes wedding-balloon-pop-flash {
+    0%, 60% { opacity: 0; transform: translate3d(calc(var(--balloon-sway) * -0.3), 58vh, 0) scale(0.3); }
+    64% { opacity: 0.9; transform: translate3d(calc(var(--balloon-sway) * -0.3), 58vh, 0) scale(1.6); }
+    78%, 100% { opacity: 0; transform: translate3d(calc(var(--balloon-sway) * -0.3), 58vh, 0) scale(2.4); }
+  }
+  @keyframes wedding-balloon-pop-fragment {
+    0%, 60% { opacity: 0; transform: translate3d(calc(var(--balloon-sway) * -0.3), 58vh, 0) scale(0.4); }
+    64% { opacity: 1; transform: translate3d(calc(var(--balloon-sway) * -0.3 + var(--fx)), calc(58vh + var(--fy)), 0) scale(1); }
+    100% { opacity: 0; transform: translate3d(calc(var(--balloon-sway) * -0.3 + var(--fx) * 1.7), calc(58vh + var(--fy) * 1.7 + 7vh), 0) scale(0.5); }
+  }
+`;
+
+function bubblePieces(count: number) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: randomBetween(0, 100),
+    size: randomBetween(10, 26),
+    duration: randomBetween(9, 16),
+    delay: randomBetween(0, 14),
+    drift: randomBetween(-50, 50),
+  }));
+}
+
+function renderBubbles(items: ReturnType<typeof bubblePieces>) {
+  return items.map((bu) => (
+    <span
+      key={bu.id}
+      className="absolute bottom-[-8%] block rounded-full opacity-0"
+      style={
+        {
+          left: `${bu.left}%`,
+          width: bu.size,
+          height: bu.size,
+          // Off-centre highlight + a bright rim, the two things that read
+          // as "glass/soap film" rather than a flat coloured dot.
+          background:
+            "radial-gradient(circle at 32% 28%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.35) 22%, rgba(200,230,255,0.12) 55%, rgba(200,230,255,0.05) 100%)",
+          border: "1px solid rgba(255,255,255,0.5)",
+          boxShadow: "0 0 6px 1px rgba(255,255,255,0.35), inset 0 0 6px rgba(255,255,255,0.4)",
+          animation: `wedding-bubble-rise ${bu.duration}s ease-in-out ${bu.delay}s infinite`,
+          "--bubble-drift": `${bu.drift}px`,
+        } as CSSProperties
+      }
+    />
+  ));
+}
+
+const BUBBLE_KEYFRAMES = `
+  @keyframes wedding-bubble-rise {
+    0% { transform: translate3d(0, 0, 0) scale(0.7); opacity: 0; }
+    10% { opacity: 0.85; }
+    50% { transform: translate3d(calc(var(--bubble-drift) * 0.6), -60vh, 0) scale(1); }
+    90% { opacity: 0.5; }
+    100% { transform: translate3d(var(--bubble-drift), -118vh, 0) scale(1.1); opacity: 0; }
+  }
+`;
+
+function lightGlintPieces(count: number) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: randomBetween(0, 100),
+    top: randomBetween(0, 100),
+    size: randomBetween(2, 4),
+    duration: randomBetween(1.4, 3),
+    delay: randomBetween(0, 3),
+  }));
+}
+
+function renderLightGlints(items: ReturnType<typeof lightGlintPieces>) {
+  return items.map((g) => (
+    <span
+      key={g.id}
+      className="absolute block rounded-full opacity-0"
+      style={{
+        left: `${g.left}%`,
+        top: `${g.top}%`,
+        width: g.size,
+        height: g.size,
+        background: "#fff8e6",
+        boxShadow: "0 0 8px 2px rgba(255,238,200,0.9)",
+        animation: `wedding-glint-twinkle ${g.duration}s ease-in-out ${g.delay}s infinite`,
+      }}
+    />
+  ));
+}
+
+const GLINT_KEYFRAMES = `
+  @keyframes wedding-glint-twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.4); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+`;
+
+/** The three-layer "Balloon Drop" look: soap bubbles rising and warm light
+ * glints twinkling run continuously as the ambient backdrop, while the
+ * balloons themselves fall in periodic waves via useCyclingBurst — a real
+ * balloon-net release is a discrete event that happens every so often, not
+ * a constant rain, so only that layer cycles on/off. */
+function BalloonDrop() {
+  const compact = useIsCompactViewport();
+  const bubbles = useClientItems(() => bubblePieces(compact ? 10 : 16));
+  const glints = useClientItems(() => lightGlintPieces(compact ? 10 : 18));
+  // Worst case per wave: 7s duration + 1.4s delay + buffer — activeMs must
+  // clear the slowest balloon's own fall before the next wave re-rolls.
+  const balloons = useCyclingBurst(() => balloonPieces(compact ? 6 : 10), 8700, 13000);
+
+  if (bubbles.length === 0 && glints.length === 0 && balloons.length === 0) return null;
+
+  return (
+    <div className={OVERLAY_CLASS} aria-hidden>
+      {renderBubbles(bubbles)}
+      {renderLightGlints(glints)}
+      {renderBalloons(balloons)}
+      <style>{`
+        ${BUBBLE_KEYFRAMES}
+        ${GLINT_KEYFRAMES}
+        ${BALLOON_KEYFRAMES}
+      `}</style>
+    </div>
+  );
+}
+
+/** The gate-entry burst: one big balloon-net release plus a denser flurry
+ * of bubbles and light glints, all firing together — the persistent
+ * version's three separately-paced layers collapsed into a single moment. */
+function BalloonDropBurst({ triggerKey }: { triggerKey: number | null }) {
+  const compact = useIsCompactViewport();
+  const balloons = useBurst(
+    triggerKey,
+    () =>
+      balloonPieces(compact ? 16 : 28).map((b) => ({
+        ...b,
+        duration: randomBetween(3.6, 5.2),
+        delay: randomBetween(0, 0.8),
+      })),
+    6800
+  );
+  const bubbles = useBurst(
+    triggerKey,
+    () =>
+      bubblePieces(compact ? 16 : 26).map((bu) => ({
+        ...bu,
+        duration: randomBetween(3, 5),
+        delay: randomBetween(0, 1),
+      })),
+    6800
+  );
+  const glints = useBurst(
+    triggerKey,
+    () =>
+      lightGlintPieces(compact ? 20 : 36).map((g) => ({
+        ...g,
+        duration: randomBetween(0.8, 1.8),
+        delay: randomBetween(0, 2),
+      })),
+    6800
+  );
+
+  if (balloons.length === 0 && bubbles.length === 0 && glints.length === 0) return null;
+
+  return (
+    <div className={OVERLAY_CLASS} aria-hidden>
+      {renderBubbles(bubbles)}
+      {renderLightGlints(glints)}
+      {renderBalloons(balloons)}
+      <style>{`
+        ${BUBBLE_KEYFRAMES}
+        ${GLINT_KEYFRAMES}
+        ${BALLOON_KEYFRAMES}
+      `}</style>
+    </div>
+  );
+}
+
+// A wider, more varied bouquet than Roses' 🌹/🌷 pair — reads as a genuine
+// "mưa hoa" (flower shower) mixing several kinds, not one flower repeated.
+const FLOWER_GLYPHS = ["🌸", "🌺", "🌼", "💮", "🌷"];
+
+function flowerShowerPieces(count: number) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: randomBetween(0, 100),
+    size: randomBetween(18, 32),
+    duration: randomBetween(9, 16),
+    delay: randomBetween(0, 12),
+    drift: randomBetween(-130, 130),
+    rotate: randomBetween(-320, 320),
+    glyph: FLOWER_GLYPHS[i % FLOWER_GLYPHS.length],
+  }));
+}
+
+function renderFlowerShower(
+  items: ReturnType<typeof flowerShowerPieces>,
+  infinite: boolean
+) {
+  return items.map((f) => (
+    <span
+      key={f.id}
+      className="absolute top-[-8%] block leading-none opacity-0"
+      style={
+        {
+          left: `${f.left}%`,
+          fontSize: f.size,
+          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.22))",
+          animation: `wedding-flower-tumble ${f.duration}s linear ${f.delay}s ${
+            infinite ? "infinite" : "1"
+          }`,
+          "--flower-drift": `${f.drift}px`,
+          "--flower-rotate": `${f.rotate}deg`,
+        } as CSSProperties
+      }
+    >
+      {f.glyph}
+    </span>
+  ));
+}
+
+// `scaleY` oscillating toward ~0.25-0.35 mid-fall (rather than staying at
+// 1) fakes a flower tumbling edge-on toward the camera — a cheap pseudo-3D
+// flip layered on top of the same drift/rotate curve Roses uses.
+const FLOWER_SHOWER_KEYFRAMES = `
+  @keyframes wedding-flower-tumble {
+    0% { transform: translate3d(0, -10vh, 0) rotate(0deg) scaleY(1); opacity: 0; }
+    6% { opacity: 0.95; }
+    20% { transform: translate3d(calc(var(--flower-drift) * 0.22), 12vh, 0) rotate(calc(var(--flower-rotate) * 0.18)) scaleY(0.3); }
+    35% { transform: translate3d(calc(var(--flower-drift) * -0.1), 30vh, 0) rotate(calc(var(--flower-rotate) * 0.38)) scaleY(1); }
+    50% { transform: translate3d(calc(var(--flower-drift) * 0.5), 50vh, 0) rotate(calc(var(--flower-rotate) * 0.58)) scaleY(0.25); }
+    65% { transform: translate3d(calc(var(--flower-drift) * 0.2), 68vh, 0) rotate(calc(var(--flower-rotate) * 0.76)) scaleY(1); }
+    80% { transform: translate3d(calc(var(--flower-drift) * 0.85), 86vh, 0) rotate(calc(var(--flower-rotate) * 0.9)) scaleY(0.35); opacity: 0.85; }
+    100% { transform: translate3d(var(--flower-drift), 112vh, 0) rotate(var(--flower-rotate)) scaleY(1); opacity: 0; }
+  }
+`;
+
+function FlowerShower() {
+  const compact = useIsCompactViewport();
+  const flowers = useClientItems(() => flowerShowerPieces(compact ? 14 : 22));
+
+  if (flowers.length === 0) return null;
+
+  return (
+    <div className={OVERLAY_CLASS} aria-hidden>
+      {renderFlowerShower(flowers, true)}
+      <style>{FLOWER_SHOWER_KEYFRAMES}</style>
+    </div>
+  );
+}
+
+/** The gate-entry burst: a dense, fast one-shot downpour instead of the
+ * persistent version's sparse, slow, looping shower. */
+function FlowerShowerBurst({ triggerKey }: { triggerKey: number | null }) {
+  const compact = useIsCompactViewport();
+  const flowers = useBurst(
+    triggerKey,
+    () =>
+      flowerShowerPieces(compact ? 45 : 80).map((f) => ({
+        ...f,
+        duration: randomBetween(3.2, 5),
+        delay: randomBetween(0, 0.8),
+      })),
+    // Worst case 5s duration + 0.8s delay + buffer.
+    6100
+  );
+
+  if (flowers.length === 0) return null;
+
+  return (
+    <div className={OVERLAY_CLASS} aria-hidden>
+      {renderFlowerShower(flowers, false)}
+      <style>{FLOWER_SHOWER_KEYFRAMES}</style>
     </div>
   );
 }

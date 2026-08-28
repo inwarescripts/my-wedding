@@ -2,13 +2,14 @@ import type { CSSProperties } from "react";
 import type { BackgroundSettings } from "@/types/wedding-config";
 import type { ColorThemePalette } from "./theme";
 
-export type BackgroundPattern = "dots" | "sprig" | "diagonal" | "arch";
+export type BackgroundPattern = "dots" | "sprig" | "diagonal" | "arch" | "floral";
 
 export const backgroundPatternRegistry: Record<BackgroundPattern, { label: string }> = {
   dots: { label: "Chấm bi mảnh" },
   sprig: { label: "Nhành lá" },
   diagonal: { label: "Sọc chéo mảnh" },
   arch: { label: "Vòm ren" },
+  floral: { label: "Nhành lá hoa (ảnh tĩnh)" },
 };
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -58,6 +59,34 @@ export function backgroundStyle(
         backgroundSize: "40px 20px",
       };
     }
+    // A real illustrated corner flourish (not a procedurally-tinted SVG
+    // pattern like the other four) — so unlike them it doesn't recolour
+    // per colour theme, the same tradeoff as the couple's own coverImage
+    // or the opening gate's real artwork elsewhere in this app.
+    //
+    // `repeat-y`, not a single anchored copy: every template's first frame
+    // is Hero, a `h-[100svh] w-full` edge-to-edge cover photo (see
+    // Hero.tsx) — taller than this art itself, so a single copy anchored
+    // at `main`'s very top would sit 100% behind it and never be seen at
+    // all. `main`'s own background is only ever visible in the transparent
+    // gutters between frames (each <Section> pads itself but paints no
+    // background of its own, see Section.tsx) and in any frame that
+    // doesn't itself go edge-to-edge — repeating the tile down the whole
+    // column means it reliably shows up in at least one of those gaps as
+    // the guest scrolls, instead of gambling on a single fixed spot.
+    // Deliberately NOT `background-attachment: fixed` — that positions
+    // relative to the *viewport*, not this element, which would shove the
+    // art into the browser window's actual top-left corner instead of
+    // `main`'s own (this column is centred with empty margins on wide
+    // desktop screens, so those aren't the same point).
+    case "floral":
+      return {
+        backgroundColor: palette.ivory,
+        backgroundImage: "url(/flower/bg-main.webp)",
+        backgroundRepeat: "repeat-y",
+        backgroundPosition: "top left",
+        backgroundSize: "min(340px, 65vw) auto",
+      };
     case "dots":
     default: {
       const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><circle cx='14' cy='14' r='1.5' fill='${line}' fill-opacity='0.6'/></svg>`;
