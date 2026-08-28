@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import type { GalleryContent } from "@/types/wedding-config";
@@ -63,7 +64,22 @@ function Lightbox({
   active: number | null;
   onClose: () => void;
 }) {
-  return (
+  // Projects with the "Mờ ảo (dissolve)" scroll transition
+  // (SectionTransition, see transition.tsx) wrap every section — including
+  // this gallery — in a div with `will-change: opacity, filter`. Per spec
+  // that creates a new containing block for `position: fixed` descendants,
+  // so without a portal this overlay stops being fixed to the real
+  // viewport and instead sticks to that wrapper, shifted up by however far
+  // the page has scrolled — on a phone, scrolled past the fold, that pushes
+  // the whole modal off-screen and the tapped photo never visibly appears.
+  // Portalling straight to <body> sidesteps every such ancestor.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  const content = (
     <AnimatePresence>
       {active !== null && (
         <motion.div
@@ -95,6 +111,9 @@ function Lightbox({
       )}
     </AnimatePresence>
   );
+
+  if (!mounted) return null;
+  return createPortal(content, document.body);
 }
 
 function MasonryBody({ items, onOpen }: { items: string[]; onOpen: (i: number) => void }) {
