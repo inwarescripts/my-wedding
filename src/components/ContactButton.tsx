@@ -24,6 +24,7 @@ export function ContactButton({
 }) {
   const [open, setOpen] = useState(false);
   const [origin, setOrigin] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -37,6 +38,12 @@ export function ContactButton({
     e.preventDefault();
     e.stopPropagation();
     setOpen(true);
+  }
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(qrValue);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
   }
 
   return (
@@ -59,13 +66,44 @@ export function ContactButton({
               ? "Quét mã QR để xem demo trực tiếp trên điện thoại"
               : "Quét mã QR để mở trang trên điện thoại"}
           </p>
+          <button
+            type="button"
+            onClick={handleCopy}
+            disabled={!origin}
+            className="flex w-full items-center justify-between gap-3 border border-line bg-ivory-deep/60 px-4 py-2.5 text-left transition-colors hover:border-accent disabled:cursor-default"
+          >
+            <span className="truncate text-xs text-ink-soft">{qrValue}</span>
+            <span className="flex shrink-0 items-center gap-1.5 text-[10px] uppercase tracking-[0.15em] text-ink">
+              {copied ? (
+                "Đã copy ✓"
+              ) : (
+                <>
+                  <svg
+                    aria-hidden
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="9" y="9" width="12" height="12" rx="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  Copy link
+                </>
+              )}
+            </span>
+          </button>
           <a
             href={`https://zalo.me/${ZALO_PHONE}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex w-full items-center justify-center gap-2 border border-ink bg-ink px-6 py-3 text-xs uppercase tracking-[0.2em] text-ivory transition-opacity hover:opacity-85"
           >
-            Liên hệ Zalo
+            {demoUrl ? "Liên hệ Zalo để tạo mẫu này" : "Liên hệ Zalo"}
           </a>
         </div>
       </Modal>

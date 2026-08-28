@@ -11,29 +11,9 @@ import { hasWebGL } from "@/lib/hasWebGL";
 import { getColorThemePalette, themeCssVars } from "@/motion/registry/theme";
 import { useCountdown } from "@/lib/useCountdown";
 import { getLenisInstance } from "@/lib/smooth-scroll";
+import { openingRegistry, type OpeningVariant } from "@/motion/registry/opening-labels";
 
-export type OpeningVariant =
-  | "particleBloom"
-  | "silkWave"
-  | "goldenRings"
-  | "heartRibbon"
-  | "roseRibbon"
-  | "doubleHappiness"
-  | "redDoor"
-  | "curtain"
-  | "envelope";
-
-export const openingRegistry: Record<OpeningVariant, { label: string }> = {
-  particleBloom: { label: "Dải hạt sáng 3D" },
-  silkWave: { label: "Lụa 3D uốn lượn" },
-  goldenRings: { label: "Nhẫn cưới 3D xoay" },
-  heartRibbon: { label: "Dải trái tim 3D" },
-  roseRibbon: { label: "Dải hoa hồng 3D" },
-  doubleHappiness: { label: "Ấn Hỉ vàng son 3D" },
-  redDoor: { label: "Cửa cưới đóng mở" },
-  curtain: { label: "Rèm nhung khép mở" },
-  envelope: { label: "Mở thiệp thư" },
-};
+export { openingRegistry, type OpeningVariant };
 
 // Scenes with their own fixed festive palette, independent of the site's
 // selected colour theme — same reasoning as DOM_OPENING_VARIANTS below.

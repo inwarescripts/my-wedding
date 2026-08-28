@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { getPublishedProjectsGallery } from "@/lib/wedding-config";
+import { openingRegistry, type OpeningVariant } from "@/motion/registry/opening-labels";
 import { Reveal, Stagger, StaggerItem } from "@/motion/Reveal";
 import { AnimatedHeading } from "@/motion/registry/typography";
 import { AmbientEffect } from "@/motion/registry/ambient";
@@ -379,6 +380,9 @@ export default async function Home() {
             </StaggerItem>
             {projects.map((project) => {
               const demoUrl = getDemoUrl(project.slug);
+              const openingLabel = project.openingVariant
+                ? openingRegistry[project.openingVariant as OpeningVariant]?.label
+                : undefined;
               return (
               <StaggerItem key={project.slug} preset="fadeUp">
                 <div className="group">
@@ -413,31 +417,39 @@ export default async function Home() {
                           199K
                         </span>
                       </span>
-                      <div className="absolute inset-x-0 bottom-0 p-6 text-ivory">
-                        <p className="font-heading text-2xl italic drop-shadow-sm">
-                          {project.displayName}
-                        </p>
-                        <p className="mt-1.5 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-ivory/85">
-                          <span className="h-px w-4 bg-ivory/50" />
-                          {formatDate(project.weddingDate)}
-                        </p>
+                      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-6 text-ivory">
+                        <div>
+                          <p className="font-heading text-2xl italic drop-shadow-sm">
+                            {project.displayName}
+                          </p>
+                          <p className="mt-1.5 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-ivory/85">
+                            <span className="h-px w-4 bg-ivory/50" />
+                            {formatDate(project.weddingDate)}
+                          </p>
+                        </div>
+                        {openingLabel && (
+                          <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-ivory/30 bg-ink/40 px-3 py-1 text-right text-[10px] text-ivory/90 backdrop-blur-sm">
+                            <span aria-hidden>✨</span>
+                            {openingLabel}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </Link>
-                  <div className="flex items-center justify-between border-b border-line pb-4 pt-4 transition-colors group-hover:border-accent">
+                  <div className="flex items-center justify-between pt-5">
                     <Link
                       href={demoUrl}
-                      className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-ink-soft transition-colors group-hover:text-ink"
+                      className="group/cta inline-flex items-center gap-2 border border-ink px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-ink transition-colors hover:bg-ink hover:text-ivory"
                     >
                       Xem demo
-                      <span className="transition-transform duration-300 group-hover:translate-x-1.5">
+                      <span className="transition-transform duration-300 group-hover/cta:translate-x-1.5">
                         →
                       </span>
                     </Link>
                     <ContactButton
                       demoUrl={demoUrl}
                       label="Chi tiết"
-                      className="text-xs uppercase tracking-[0.2em] text-ink-soft transition-colors hover:text-ink"
+                      className="text-xs uppercase tracking-[0.2em] text-ink-soft underline-offset-4 transition-colors hover:text-ink hover:underline"
                     />
                   </div>
                 </div>

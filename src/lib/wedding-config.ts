@@ -195,6 +195,11 @@ export interface ProjectGalleryItem {
   weddingDate: string;
   coverImage: string | null;
   quote: string | null;
+  /** The "opening" frame's chosen variant (see openingRegistry in
+   * src/motion/registry/opening-labels.ts), so the card can show off which
+   * gate effect this template uses — undefined if the project has no
+   * opening frame or it was never given a variant. */
+  openingVariant: string | undefined;
 }
 
 /** Cards for the "/" marketing page's template gallery — published
@@ -208,16 +213,30 @@ export async function getPublishedProjectsGallery(): Promise<ProjectGalleryItem[
       OR: [{ expiredAt: null }, { expiredAt: { gt: new Date() } }],
     },
     orderBy: { publishedAt: "desc" },
-    include: { couple: true },
+    include: {
+      couple: true,
+      frames: { where: { type: "opening" }, take: 1 },
+    },
   });
 
   return projects
     .filter((p): p is typeof p & { couple: NonNullable<typeof p.couple> } => !!p.couple)
-    .map((p) => ({
-      slug: p.slug,
-      displayName: p.couple.displayName,
-      weddingDate: p.couple.weddingDate.toISOString(),
-      coverImage: p.couple.coverImage,
-      quote: p.couple.quote,
-    }));
+    .map((p) => {
+      const openingFrame = p.frames[0];
+      const openingVariant =
+        openingFrame?.animation &&
+        typeof openingFrame.animation === "object" &&
+        "variant" in openingFrame.animation
+          ? String((openingFrame.animation as { variant?: unknown }).variant ?? "") || undefined
+          : undefined;
+
+      return {
+        slug: p.slug,
+        displayName: p.couple.displayName,
+        weddingDate: p.couple.weddingDate.toISOString(),
+        coverImage: p.couple.coverImage,
+        quote: p.couple.quote,
+        openingVariant,
+      };
+    });
 }
