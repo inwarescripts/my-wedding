@@ -34,6 +34,7 @@
     "next-auth": "^5.0.0-beta.32",
     "qrcode.react": "^4.2.0",
     "react": "19.2.8",
+    "react-day-picker": "^10.0.1",
     "react-dom": "19.2.8",
     "react-dropzone": "^20.1.1",
     "sharp": "^0.35.3",

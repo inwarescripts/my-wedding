@@ -1,6 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { DayPicker } from "react-day-picker";
+import { vi } from "react-day-picker/locale";
+import rdpStyles from "react-day-picker/style.module.css";
 
 // Temp client-side ids for rows added in the editor before save (the server
 // assigns real ids on create). A counter, not Date.now()/crypto — those are
@@ -55,6 +58,147 @@ export function TextField({
         className={inputClass}
       />
     </Field>
+  );
+}
+
+/** A calendar-popover + time input for picking a date+time, storing it as
+ * a UTC ISO string — replaces the plain `<input type="datetime-local">`
+ * that used to back "Ngày cưới"/"Hạn sử dụng".
+ *
+ * That native input had a real off-by-one-day bug: its value is a LOCAL
+ * "YYYY-MM-DDTHH:mm" string with no timezone, so `new Date(v)` correctly
+ * parses it as local time — but `.slice(0, 16)` on the STORED UTC ISO
+ * string for redisplay treated the UTC wall-clock digits as if they were
+ * local, which silently shifts by the browser's UTC offset every time the
+ * field is redrawn (e.g. re-opening the editor). For Vietnam (UTC+7),
+ * picking a midnight date very visibly rendered back as the previous
+ * evening.
+ *
+ * This component never touches the ISO string with substring slicing:
+ * `date.getHours()/getMinutes()` reads the LOCAL wall-clock components
+ * directly off the `Date` object (the correct, spec-guaranteed way), and
+ * `date.setHours(...)` + `.toISOString()` converts a local wall-clock edit
+ * back to UTC — so the same local moment always round-trips exactly. */
+export function DateTimeField({
+  label,
+  value,
+  onChange,
+  className,
+  clearable = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (isoValue: string) => void;
+  className?: string;
+  /** Shows an "×" to reset the field back to an empty string — for
+   * optional dates like "Hạn sử dụng" (no expiry). "Ngày cưới" always
+   * needs a value, so it leaves this off. */
+  clearable?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const date = value ? new Date(value) : null;
+
+  useEffect(() => {
+    if (!open) return;
+    function handlePointerDown(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [open]);
+
+  function commitDay(day: Date) {
+    const next = new Date(day);
+    if (date) next.setHours(date.getHours(), date.getMinutes(), 0, 0);
+    onChange(next.toISOString());
+  }
+
+  function commitTime(timeStr: string) {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const next = date ? new Date(date) : new Date();
+    next.setHours(hours || 0, minutes || 0, 0, 0);
+    onChange(next.toISOString());
+  }
+
+  const timeValue = date
+    ? `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
+    : "00:00";
+
+  return (
+    <div ref={containerRef} className={`relative ${className ?? ""}`}>
+      <span className={labelClass}>{label}</span>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className={`${inputClass} text-left`}
+        >
+          {date
+            ? date.toLocaleDateString("vi-VN", {
+                weekday: "short",
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "Chọn ngày"}
+        </button>
+        <input
+          type="time"
+          value={timeValue}
+          onChange={(e) => commitTime(e.target.value)}
+          className={`${inputClass} w-28 shrink-0`}
+        />
+        {clearable && date && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            aria-label="Xoá ngày"
+            className="shrink-0 rounded-md border border-line px-2.5 text-ink-soft transition-colors hover:border-ink hover:text-ink"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
+      {open && (
+        <div className="absolute z-30 mt-1 rounded-md border border-line bg-ivory p-2 shadow-lg">
+          <DayPicker
+            mode="single"
+            selected={date ?? undefined}
+            // Without this, DayPicker opens on *today's* month regardless
+            // of what's already selected — for a wedding date months away
+            // from today, that meant scrolling several months just to see
+            // the picked day highlighted.
+            defaultMonth={date ?? undefined}
+            onSelect={(day) => {
+              if (!day) return;
+              commitDay(day);
+              setOpen(false);
+            }}
+            locale={vi}
+            classNames={rdpStyles}
+            showOutsideDays
+            // DayPicker's own stylesheet sets --rdp-accent-color etc.
+            // directly on its root element (`.rdp-root { --rdp-accent-
+            // color: blue; ... }`), which wins over the same variables set
+            // on an ANCESTOR — an inherited custom property always loses
+            // to any explicit declaration on the element itself, no matter
+            // how it's set. `style` here targets that root element
+            // directly, so it actually overrides the default blue.
+            style={
+              {
+                "--rdp-accent-color": "var(--color-accent)",
+                "--rdp-accent-background-color": "var(--color-accent-soft)",
+                "--rdp-today-color": "var(--color-accent)",
+              } as CSSProperties
+            }
+          />
+        </div>
+      )}
+    </div>
   );
 }
 

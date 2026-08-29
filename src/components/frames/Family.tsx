@@ -4,43 +4,15 @@ import { Reveal } from "@/motion/Reveal";
 import { FloralOrnament, LeafyCorner, BalloonCluster, DaisyCluster } from "@/motion/registry/family";
 import { MapModalButton } from "@/components/MapModalButton";
 
-function FamilyCard({ side, align }: { side: FamilySide; align: "left" | "right" }) {
-  const map = side.map;
-  return (
-    <Reveal
-      preset={align === "left" ? "fadeRight" : "fadeLeft"}
-      className="card-flat px-8 py-10 text-center"
-    >
-      <p className="font-script text-3xl text-accent">{side.title}</p>
-      <div className="mx-auto my-4 h-px w-10 bg-line" />
-      <p className="font-serif text-lg text-ink">{side.father}</p>
-      <p className="font-serif text-lg text-ink">{side.mother}</p>
-
-      {map?.enabled && (
-        <div className="mt-6">
-          {map.address && (
-            <p className="mb-3 font-serif text-sm text-ink-soft">{map.address}</p>
-          )}
-          <MapModalButton
-            title={side.title}
-            lat={map.lat}
-            lng={map.lng}
-            directionsUrl={map.directionsUrl}
-            className="inline-flex w-full items-center justify-center gap-2 border border-ink px-6 py-2.5 text-xs tracking-[0.2em] uppercase text-ink transition-colors hover:bg-ink hover:text-ivory"
-          />
-        </div>
-      )}
-    </Reveal>
-  );
-}
-
-function SimpleFamily({ content }: { content: FamilyContent }) {
-  return (
-    <div className="mt-12 grid gap-8 md:grid-cols-2">
-      <FamilyCard side={content.groom} align="left" />
-      <FamilyCard side={content.bride} align="right" />
-    </div>
-  );
+/** "09h00" style, matching the "Xh00" time notation already used on the
+ * traditional printed-invitation reference. Always derived from
+ * `couple.weddingDate`'s own time-of-day — never `event.time` (a separate
+ * free-text field on the ceremony schedule) — so editing the wedding
+ * date's time in the admin editor is what actually changes what's shown
+ * here, instead of a same-looking but disconnected field silently
+ * overriding it. */
+function formatCeremonyTime(date: Date) {
+  return `${String(date.getHours()).padStart(2, "0")}h${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
 /** One family side's own venue map — for couples whose two families hold
@@ -86,17 +58,21 @@ function AnnouncementBody({
   couple: CoupleInfo;
   event?: EventItem;
 }) {
-  const ceremonyDate = event ? new Date(event.date) : null;
-  const weekday = ceremonyDate
-    ? ceremonyDate.toLocaleDateString("vi-VN", { weekday: "long" })
-    : null;
-  const dateStr = ceremonyDate
-    ? ceremonyDate.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-    : null;
+  // Always couple.weddingDate — the same source of truth as the cover
+  // page/Opening gate, never event.date. `event` is the *first* item of a
+  // separately-editable ceremony schedule (frame-registry.tsx passes
+  // ctx.events[0]), which can be a different date entirely (a second
+  // ceremony, a reception, or just edited out of sync) — that mismatch is
+  // what showed a wrong date/weekday here while the cover page printed the
+  // right one. `event` is still used for what couple.weddingDate doesn't
+  // carry: time, venue, address.
+  const ceremonyDate = new Date(couple.weddingDate);
+  const weekday = ceremonyDate.toLocaleDateString("vi-VN", { weekday: "long" });
+  const dateStr = ceremonyDate.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   return (
     <>
@@ -133,23 +109,16 @@ function AnnouncementBody({
       <p className="font-script text-2xl text-accent">&amp;</p>
       <p className="font-heading text-3xl italic text-ink md:text-4xl">{couple.brideName}</p>
 
-      {ceremonyDate && (
-        <>
-          <div className="mx-auto my-8 h-px w-16 bg-line" />
-          <p className="font-serif text-sm text-ink-soft">Được cử hành vào lúc</p>
-          <p className="mt-1 font-heading text-xl text-ink">
-            {event?.time ? `${event.time} — ` : ""}
-            {weekday}, {dateStr}
-          </p>
-          {couple.weddingDateLunar && (
-            <p className="mt-1 text-xs text-ink-soft">({couple.weddingDateLunar})</p>
-          )}
-          {event?.venue && (
-            <p className="mt-6 font-serif text-lg text-ink">Tại {event.venue}</p>
-          )}
-          {event?.address && <p className="text-sm text-ink-soft">{event.address}</p>}
-        </>
+      <div className="mx-auto my-8 h-px w-16 bg-line" />
+      <p className="font-serif text-sm text-ink-soft">Được cử hành vào lúc</p>
+      <p className="mt-1 font-heading text-xl text-ink">
+        {formatCeremonyTime(ceremonyDate)} — {weekday}, {dateStr}
+      </p>
+      {couple.weddingDateLunar && (
+        <p className="mt-1 text-xs text-ink-soft">({couple.weddingDateLunar})</p>
       )}
+      {event?.venue && <p className="mt-6 font-serif text-lg text-ink">Tại {event.venue}</p>}
+      {event?.address && <p className="text-sm text-ink-soft">{event.address}</p>}
     </>
   );
 }
@@ -301,6 +270,230 @@ function OpenedFamily(props: AnnouncementProps) {
   );
 }
 
+// Short "T2..T7/CN" form, not "Thứ 2".."Thứ 7" — at the real page's ~230px
+// column width (main is capped 768px, split into two panels here) the
+// longer labels wrapped onto two lines and looked broken.
+const CALENDAR_WEEKDAY_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+
+/** Lays out one calendar month as a 7-wide grid of Monday-start weeks
+ * (leading/trailing `null`s pad the first/last week to a full row) — pure
+ * function of the wedding date, so it's stable across server/client
+ * renders with no randomness or "now" involved. */
+function buildCalendarWeeks(monthDate: Date): (number | null)[][] {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // JS getDay() is Sunday-first (0-6); the reference card's week starts
+  // Monday, so this remaps to a Monday-first 0-6 offset.
+  const firstWeekdayMondayFirst = (new Date(year, month, 1).getDay() + 6) % 7;
+
+  const weeks: (number | null)[][] = [];
+  let week: (number | null)[] = new Array(firstWeekdayMondayFirst).fill(null);
+  for (let day = 1; day <= daysInMonth; day++) {
+    week.push(day);
+    if (week.length === 7) {
+      weeks.push(week);
+      week = [];
+    }
+  }
+  if (week.length > 0) {
+    while (week.length < 7) week.push(null);
+    weeks.push(week);
+  }
+  return weeks;
+}
+
+/** The desk-calendar-page panel from the reference card: a small
+ * monogram/"Hạnh Phúc" flourish, the wedding month spelled out, and a
+ * real Monday-first calendar grid with the wedding day itself circled in
+ * rose — not just a date printed in text, the way a couple would actually
+ * circle it on a real calendar. */
+function CalendarPanel({ couple }: { couple: CoupleInfo }) {
+  const weddingDate = new Date(couple.weddingDate);
+  const weeks = buildCalendarWeeks(weddingDate);
+  const weddingDay = weddingDate.getDate();
+  const monthLabel = weddingDate
+    .toLocaleDateString("vi-VN", { month: "long", year: "numeric" })
+    .toUpperCase();
+  const initials = `${couple.groomName.trim().charAt(0) || ""}${
+    couple.brideName.trim().charAt(0) || ""
+  }`.toUpperCase();
+
+  return (
+    <div className="flex flex-col items-center px-6 py-10 text-center sm:py-14">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-rose-300">
+        <span className="font-heading text-xl italic text-rose-600">{initials || "&"}</span>
+      </div>
+      <p className="mt-3 font-script text-2xl text-rose-600">Hạnh Phúc</p>
+      <p className="mt-5 text-sm font-bold uppercase tracking-[0.15em] text-ink">{monthLabel}</p>
+
+      <div className="mt-5 grid w-full grid-cols-7 gap-y-2">
+        {CALENDAR_WEEKDAY_LABELS.map((label) => (
+          <span key={label} className="text-[10px] font-semibold uppercase text-ink-soft">
+            {label}
+          </span>
+        ))}
+        {weeks.flat().map((day, i) => (
+          <span key={i} className="flex items-center justify-center py-0.5">
+            {day !== null &&
+              (day === weddingDay ? (
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-[11px] font-bold text-white">
+                  {day}
+                </span>
+              ) : (
+                <span className="text-[11px] text-ink">{day}</span>
+              ))}
+          </span>
+        ))}
+      </div>
+
+      {couple.weddingDateLunar && (
+        <p className="mt-5 text-xs italic text-ink-soft">({couple.weddingDateLunar})</p>
+      )}
+    </div>
+  );
+}
+
+/** The classic printed "thiệp mời" spread — a card shown *opened*, left to
+ * right: a torn-envelope-flap accent bleeding off the edge, the wedding
+ * month's own calendar page with the day circled, then the guest-facing
+ * invitation panel itself ("Trân trọng kính mời... đến dự tiệc"), ending
+ * in NHÀ TRAI / NHÀ GÁI side by side — matching the traditional
+ * Vietnamese printed invitation card format (see reference).
+ * Self-contained rather than reusing AnnouncementBody: the content order
+ * and register differ enough (guest-facing invite vs. family announcement,
+ * parents-last vs. parents-first) that sharing it would mean threading a
+ * mode flag through, not a genuine formatting variant. */
+function TraditionalFamily({ content, couple, event }: AnnouncementProps) {
+  // Always couple.weddingDate — the same source of truth as the cover
+  // page/Opening gate and CalendarPanel below — never event.date. `event`
+  // is the *first* item of a separately-editable ceremony schedule
+  // (frame-registry.tsx passes ctx.events[0]), which can be a different
+  // date entirely (a second ceremony, a reception, or just edited out of
+  // sync) — that mismatch is exactly what showed the calendar circling one
+  // day while the invitation text below printed another. `event` is still
+  // used for the details couple.weddingDate doesn't carry: time, venue,
+  // address.
+  const ceremonyDate = new Date(couple.weddingDate);
+  const weekday = ceremonyDate.toLocaleDateString("vi-VN", { weekday: "long" });
+  const dateStr = ceremonyDate.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+
+  return (
+    <Reveal preset="fadeUp" className="relative mx-auto mt-12 max-w-3xl">
+      <div className="relative grid gap-2 overflow-hidden border border-line bg-rose-50/70 p-2 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:gap-3">
+        {/* A diagonal ribbon peeking out of the top-left corner — reads as
+            "this card has been opened" the way the reference's envelope
+            flap does, but clipped to the card's own corner by this
+            container's `overflow-hidden` instead of bleeding into the
+            surrounding page. The old version tried to bleed 64px past the
+            card's own left edge assuming free space there; on the real
+            site `main` is capped at 768px with only ~40px of section
+            padding around it, nowhere near enough, so the flap ended up
+            floating disconnected from the card instead of attached to it. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-8 -top-8 h-16 w-16 rotate-45 bg-rose-300/90 shadow-sm"
+        />
+        {/* Same ribbon, mirrored into the opposite (bottom-right) corner —
+            balances the card instead of the accent living on only one
+            side. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-8 -bottom-8 h-16 w-16 rotate-45 bg-rose-300/90 shadow-sm"
+        />
+        <div className="border-2 border-gold/50 bg-ivory">
+          <CalendarPanel couple={couple} />
+        </div>
+
+        <div className="border-2 border-gold/50 bg-ivory px-6 py-14 text-center sm:px-10">
+          <p className="font-heading text-lg font-bold uppercase tracking-[0.08em] text-ink">
+            Trân trọng kính mời
+          </p>
+          <div className="mx-auto my-4 w-2/3 border-t border-dotted border-line" />
+          <p className="text-sm font-semibold uppercase tracking-wide text-ink">
+            Đến dự tiệc mừng hôn lễ của hai chúng tôi
+          </p>
+
+          {/* This one card is deliberately the one place in the whole site
+              that ignores the project's chosen colour theme — rose-red +
+              a real cursive script is what makes it instantly read as
+              "thiệp cưới truyền thống" rather than just another card in
+              whatever accent colour happens to be picked, the same
+              reasoning LeafyCorner/DaisyCluster above stay fixed-colour
+              regardless of theme. */}
+          <p className="mt-6 font-script text-4xl leading-tight text-rose-600 md:text-5xl">
+            {couple.groomName}
+          </p>
+          <span aria-hidden className="my-1 inline-block text-2xl">
+            💕
+          </span>
+          <p className="font-script text-4xl leading-tight text-rose-600 md:text-5xl">
+            {couple.brideName}
+          </p>
+
+          <p className="mt-8 text-sm text-ink">Được tổ chức vào hồi</p>
+          <p className="mt-1 text-base text-ink">
+            {formatCeremonyTime(ceremonyDate)}, {weekday}
+          </p>
+          <p className="mt-4 font-heading text-3xl font-bold tracking-[0.2em] text-rose-600">
+            {dateStr}
+          </p>
+          {couple.weddingDateLunar && (
+            <p className="mt-2 text-xs italic text-ink-soft">
+              (Từ ngày {couple.weddingDateLunar})
+            </p>
+          )}
+          {event?.venue && (
+            <p className="mt-6 font-script text-2xl leading-snug text-rose-600 md:text-3xl">
+              Tại {event.venue}
+            </p>
+          )}
+          {event?.address && (
+            <p className="mt-1 text-sm font-bold uppercase tracking-wide text-ink">
+              {event.address}
+            </p>
+          )}
+
+          <p className="mt-6 text-sm italic text-ink">Rất hân hạnh được đón tiếp!</p>
+
+          <div className="mx-auto my-8 w-2/3 border-t border-dotted border-line" />
+
+          <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-ink">
+                {content.groom.title}
+              </p>
+              <p className="mt-3 font-serif text-sm text-ink">{content.groom.father}</p>
+              <p className="font-serif text-sm text-ink">{content.groom.mother}</p>
+            </div>
+            <span aria-hidden className="mt-1 text-base">
+              💕
+            </span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-ink">
+                {content.bride.title}
+              </p>
+              <p className="mt-3 font-serif text-sm text-ink">{content.bride.father}</p>
+              <p className="font-serif text-sm text-ink">{content.bride.mother}</p>
+            </div>
+          </div>
+
+          {(content.groom.map?.enabled || content.bride.map?.enabled) && (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <FamilySideMapBlock side={content.groom} />
+              <FamilySideMapBlock side={content.bride} />
+            </div>
+          )}
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
 export function Family({
   content,
   variant = "simple",
@@ -335,8 +528,14 @@ export function Family({
           <ScallopFamily content={content} couple={couple} event={event} />
         ) : variant === "opened" ? (
           <OpenedFamily content={content} couple={couple} event={event} />
+        ) : variant === "traditional" ? (
+          <TraditionalFamily content={content} couple={couple} event={event} />
         ) : (
-          <SimpleFamily content={content} />
+          // "simple" (the old flat 2-card layout) was removed for looking
+          // plain/unfinished next to the other variants — old projects
+          // still saved with that variant fall through to this same
+          // default as any other unrecognised value, same as before.
+          <InvitationFamily content={content} couple={couple} event={event} />
         )}
       </Section>
     </div>

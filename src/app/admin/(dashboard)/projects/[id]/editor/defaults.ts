@@ -39,6 +39,6 @@ export const DEFAULT_VARIANT: Partial<Record<FrameType, string>> = {
   gallery: "masonry",
   photoStack: "floatingPhotos",
   timeline: "alternating",
-  family: "simple",
+  family: "invitation",
   countdown: "classic",
 };

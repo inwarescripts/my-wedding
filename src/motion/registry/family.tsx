@@ -1,15 +1,14 @@
 export type FamilyVariant =
-  | "simple"
   | "invitation"
   | "botanical"
   | "watercolor"
   | "framed"
   | "monogram"
   | "scallop"
-  | "opened";
+  | "opened"
+  | "traditional";
 
 export const familyRegistry: Record<FamilyVariant, { label: string }> = {
-  simple: { label: "Đơn giản (2 thẻ)" },
   invitation: { label: "Thiệp trang trọng" },
   botanical: { label: "Lá xanh nhiệt đới" },
   watercolor: { label: "Màu nước & nhũ vàng" },
@@ -17,6 +16,7 @@ export const familyRegistry: Record<FamilyVariant, { label: string }> = {
   monogram: { label: "Huy hiệu đầu tên" },
   scallop: { label: "Thiệp bo tròn & bóng bay" },
   opened: { label: "Thiệp mở hai trang" },
+  traditional: { label: "Thiệp cưới truyền thống (Nhà Trai / Nhà Gái)" },
 };
 
 /** A stylised branch-and-leaves flourish for corners of the "invitation"

@@ -43,6 +43,7 @@ import { sanitizeSlugInput } from "@/lib/slugify";
 import {
   Field,
   TextField,
+  DateTimeField,
   TextAreaField,
   ToggleField,
   SmallButton,
@@ -818,17 +819,14 @@ export function ProjectEditor({
             </Field>
             {isAdmin && (
               <>
-                <TextField
+                <DateTimeField
                   label="Hạn sử dụng (admin)"
-                  type="datetime-local"
-                  value={projectMeta.expiredAt ? projectMeta.expiredAt.slice(0, 16) : ""}
+                  value={projectMeta.expiredAt ?? ""}
                   onChange={(v) => {
                     markDirty();
-                    setProjectMeta((p) => ({
-                      ...p,
-                      expiredAt: v ? new Date(v).toISOString() : null,
-                    }));
+                    setProjectMeta((p) => ({ ...p, expiredAt: v || null }));
                   }}
+                  clearable
                 />
                 <p className="mt-1 text-xs text-ink-soft">
                   Sau ngày này, chủ dự án (nếu không phải admin) chỉ xem
@@ -1051,11 +1049,10 @@ export function ProjectEditor({
                 value={config.couple.displayName}
                 onChange={(v) => updateCouple({ displayName: v })}
               />
-              <TextField
+              <DateTimeField
                 label="Ngày cưới"
-                type="datetime-local"
-                value={config.couple.weddingDate.slice(0, 16)}
-                onChange={(v) => updateCouple({ weddingDate: new Date(v).toISOString() })}
+                value={config.couple.weddingDate}
+                onChange={(v) => updateCouple({ weddingDate: v })}
               />
               <TextField
                 label="Ngày âm lịch (hiển thị)"
