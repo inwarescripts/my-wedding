@@ -15,7 +15,15 @@
   --font-body: "Be Vietnam Pro", sans-serif;
   --font-script: "Great Vibes", cursive;
 
-  --section-y: clamp(4rem, 8vw, 7rem);
+  /* `main` is capped at max-w-[768px] (see WeddingRenderer.tsx), but `vw`
+     resolves against the full browser viewport — on a wide desktop screen
+     8vw kept growing well past what that fixed-width column actually
+     needed, which is why sections felt padded/disjointed on PC even after
+     trimming the marketing homepage's own section spacing separately.
+     Lower ceiling (7rem → 4.5rem) and a gentler vw factor (8vw → 5vw) keep
+     mobile's floor (4rem) untouched while keeping desktop in a tighter,
+     more cohesive 4-4.5rem band instead of scaling toward 112px. */
+  --section-y: clamp(4rem, 5vw, 4.5rem);
 }
 
 @theme inline {

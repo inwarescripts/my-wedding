@@ -292,7 +292,7 @@ export default async function Home() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden px-6 pb-24 pt-10 text-center md:pb-32 md:pt-16">
+      <section className="relative overflow-hidden px-6 pb-24 pt-10 text-center md:pb-20 md:pt-14">
         <LandingHeroBackground />
         <AmbientEffect variant="sparkle" />
         <div className="relative z-10">
@@ -338,7 +338,7 @@ export default async function Home() {
       </section>
 
       {/* Template gallery */}
-      <section id="templates" className="px-6 py-20 md:px-10 md:py-28">
+      <section id="templates" className="px-6 py-20 md:px-10 md:py-16">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
             <p className="font-script text-3xl text-accent md:text-4xl">
@@ -461,7 +461,7 @@ export default async function Home() {
       </section>
 
       {/* Pricing note */}
-      <section className="border-t border-line bg-ivory px-6 py-12 text-center md:py-14">
+      <section className="border-t border-line bg-ivory px-6 py-12 text-center md:py-12">
         <div className="mx-auto max-w-2xl">
           <p className="font-serif text-base leading-relaxed text-ink-soft md:text-lg">
             Giá đã bao gồm <strong className="font-heading text-ink">toàn bộ mẫu thiệp</strong> — bạn có thể
@@ -479,7 +479,7 @@ export default async function Home() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="relative overflow-hidden border-t border-line bg-ivory-deep px-6 py-20 text-center md:py-28">
+      <section className="relative overflow-hidden border-t border-line bg-ivory-deep px-6 py-20 text-center md:py-16">
         <div
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-0 h-px w-24 -translate-x-1/2 bg-accent-soft"
