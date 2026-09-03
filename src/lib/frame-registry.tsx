@@ -36,6 +36,7 @@ export interface RenderFrameContext {
   guestbook: GuestbookItem[];
   typographyVariant: string;
   bowStyle: string;
+  chatPosition: string;
 }
 
 export function renderFrame(frame: FrameConfig, ctx: RenderFrameContext) {
@@ -47,6 +48,8 @@ export function renderFrame(frame: FrameConfig, ctx: RenderFrameContext) {
           typographyVariant={ctx.typographyVariant}
           bowStyle={ctx.bowStyle}
           projectId={ctx.projectId}
+          layout={frame.variant}
+          chatPosition={ctx.chatPosition}
         />
       );
     case "story":

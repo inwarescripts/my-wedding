@@ -22,7 +22,10 @@ export type ColorTheme =
   | "burgundy"
   | "navy"
   | "midnightGold"
-  | "crimsonFestive";
+  | "crimsonFestive"
+  | "forestNight"
+  | "deepNavy"
+  | "royalPurple";
 
 export const colorThemeRegistry: Record<ColorTheme, { label: string; colors: ColorThemePalette }> = {
   classic: {
@@ -174,12 +177,138 @@ export const colorThemeRegistry: Record<ColorTheme, { label: string; colors: Col
       gold: "#e0b74a",
     },
   },
+  // Same "flip" as midnightGold/crimsonFestive — a deep forest green
+  // becomes `ivory` (the page background) itself, with warm cream/gold
+  // text and accents for contrast, rather than staying a light neutral
+  // backdrop with a green accent.
+  forestNight: {
+    label: "Xanh rừng đêm",
+    colors: {
+      ivory: "#162614",
+      ivoryDeep: "#1f351d",
+      ink: "#f2ecd9",
+      inkSoft: "#c3bd9e",
+      accent: "#c9b06a",
+      accentSoft: "#7c6d34",
+      line: "#2c4530",
+      gold: "#d3bb74",
+    },
+  },
+  deepNavy: {
+    label: "Xanh navy đậm",
+    colors: {
+      ivory: "#0a202f",
+      ivoryDeep: "#0e2a3d",
+      ink: "#f0ece0",
+      inkSoft: "#9fb3c4",
+      accent: "#c9a24b",
+      accentSoft: "#6f83a0",
+      line: "#1c3446",
+      gold: "#d4b56a",
+    },
+  },
+  // Same "flip" as midnightGold/crimsonFestive/forestNight/deepNavy — the
+  // pure, fully-saturated purple (#6e0a9d exactly, not softened toward a
+  // light pastel) IS the page background itself, not just an accent on a
+  // light backdrop. Gold text/accents for contrast, matching the other
+  // dark "luxury" themes' palette.
+  royalPurple: {
+    label: "Tím hoàng gia",
+    colors: {
+      ivory: "#6e0a9d",
+      ivoryDeep: "#560a7d",
+      ink: "#f5ecd9",
+      inkSoft: "#d9c4e6",
+      accent: "#d4af6a",
+      accentSoft: "#9c7a2e",
+      line: "#8a2fb8",
+      gold: "#d4af6a",
+    },
+  },
 };
+
+// The admin's own free-pick colors (see ThemeSwatchPicker in
+// ProjectEditor.tsx) don't add a registry entry — there's no fixed label
+// for "whatever background/text colors the couple happened to pick".
+// Instead both chosen hexes ride inside `settings.colorTheme` itself as
+// "custom:#bgHex|#textHex", so every existing call site
+// (getColorThemePalette/themeCssVars, both already taking a plain string)
+// keeps working unchanged; only these two need to recognize the prefix and
+// derive a palette on the fly instead of doing a registry lookup.
+const CUSTOM_THEME_PREFIX = "custom:";
+
+export function customThemeValue(bgHex: string, textHex: string): string {
+  return `${CUSTOM_THEME_PREFIX}${bgHex}|${textHex}`;
+}
+
+export function parseCustomTheme(theme: string): { bg: string; text: string } | null {
+  if (!theme.startsWith(CUSTOM_THEME_PREFIX)) return null;
+  const raw = theme.slice(CUSTOM_THEME_PREFIX.length);
+  const [bg, text] = raw.split("|");
+  if (!bg) return null;
+  // Older saves (before the text-color picker existed) only ever stored
+  // one hex — fall back to a computed black/white text color for those
+  // instead of breaking on the missing second half.
+  return { bg, text: text || pickContrastingText(bg) };
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const n = parseInt(full, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
+  return `#${[clamp(r), clamp(g), clamp(b)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+}
+
+/** Linearly blends two hex colors — `t=0` is pure `hexA`, `t=1` is pure
+ * `hexB`. Used (not HSL lightness math) to derive the rest of a custom
+ * palette from the two admin-picked colors: blending directly toward each
+ * other works the same way whether the picked background is light or
+ * dark, where an HSL-lightness approach would have to special-case which
+ * end of the scale it's starting from. */
+function mixHex(hexA: string, hexB: string, t: number): string {
+  const [r1, g1, b1] = hexToRgb(hexA);
+  const [r2, g2, b2] = hexToRgb(hexB);
+  return rgbToHex(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t);
+}
+
+/** Plain relative-luminance check, used only as the fallback for
+ * old single-color saves above (a real second pick always wins). */
+function pickContrastingText(bgHex: string): string {
+  const [r, g, b] = hexToRgb(bgHex);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? "#2b2621" : "#f6f1ea";
+}
+
+/** Builds a full 8-colour palette from the admin's two picks — background
+ * and text — instead of trying to derive a whole theme from one color.
+ * `ivory`/`ink` are the picks themselves, exactly as chosen (never
+ * softened toward a "safer" tint); everything else is a blend between the
+ * two so the palette still reads as coherent shades of the same two
+ * colors rather than unrelated tones bolted on. */
+function deriveCustomPalette(bgHex: string, textHex: string): ColorThemePalette {
+  return {
+    ivory: bgHex,
+    ivoryDeep: mixHex(bgHex, textHex, 0.12),
+    ink: textHex,
+    inkSoft: mixHex(textHex, bgHex, 0.35),
+    accent: textHex,
+    accentSoft: mixHex(textHex, bgHex, 0.45),
+    line: mixHex(bgHex, textHex, 0.25),
+    gold: "#b08d57",
+  };
+}
 
 /** Resolves a theme key to its palette, falling back to "classic" for any
  * unrecognized/legacy value. Use this (not a direct registry lookup) so
  * every caller shares the same fallback behavior. */
 export function getColorThemePalette(theme: string): ColorThemePalette {
+  const custom = parseCustomTheme(theme);
+  if (custom) return deriveCustomPalette(custom.bg, custom.text);
   return colorThemeRegistry[theme as ColorTheme]?.colors ?? colorThemeRegistry.classic.colors;
 }
 

@@ -6,6 +6,7 @@ import { Opening } from "@/motion/home/opening";
 import { SectionTransition } from "@/motion/registry/transition";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { ScrollProgress } from "@/components/ScrollProgress";
+import { LiveWishesOverlay } from "@/components/LiveWishesOverlay";
 import {
   AmbientEffect,
   AmbientBurst,
@@ -76,6 +77,7 @@ export function WeddingRenderer({
     guestbook: config.guestbook,
     typographyVariant: config.settings.typographyVariant,
     bowStyle: config.settings.bowStyle,
+    chatPosition: config.settings.chatPosition,
   };
 
   return (
@@ -110,6 +112,22 @@ export function WeddingRenderer({
           ),
         }}
       >
+        {/* Rendered inside `main` structurally (not as a
+            WeddingRenderer-level sibling), even though `position: fixed`
+            still resolves against the real viewport either way (`main`
+            gets no transform/filter here, so it never becomes a
+            containing block for this — that WOULD keep it visually
+            aligned with the card, but at the cost of pinning it to
+            `main`'s own bottom edge instead of the viewport's, breaking
+            "stays visible the whole time the guest scrolls"). Horizontal
+            alignment with the card's actual edge on wide desktop screens
+            (where `main` sits centred with empty margin on both sides,
+            see its own max-w-[768px] above) comes from
+            LiveWishesOverlay's own calc()-based left/right instead — see
+            POSITION_CLASS there. */}
+        {config.settings.chatPosition !== "default" && (
+          <LiveWishesOverlay projectId={config.projectId} position={config.settings.chatPosition} />
+        )}
         {orderedFrames.map((frame) => (
           // Anchor the admin editor's "focus preview" scroll-to on this id —
           // see focusPreview() in ProjectEditor.tsx.

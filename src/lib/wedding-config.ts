@@ -55,6 +55,7 @@ function parseSettings(raw: unknown): ProjectSettings {
       pattern: r.background?.pattern ?? defaultProjectSettings.background.pattern,
     },
     bowStyle: r.bowStyle ?? defaultProjectSettings.bowStyle,
+    chatPosition: r.chatPosition ?? defaultProjectSettings.chatPosition,
   };
 }
 

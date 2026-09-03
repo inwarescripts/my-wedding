@@ -27,6 +27,7 @@ import { openingRegistry } from "@/motion/home/opening";
 import { galleryRegistry } from "@/motion/registry/gallery";
 import { scheduleIconRegistry, ScheduleIcon } from "@/motion/registry/scheduleIcon";
 import { familyRegistry } from "@/motion/registry/family";
+import { heroLayoutRegistry } from "@/motion/registry/heroLayout";
 import { gallery3dRegistry } from "@/motion/registry/gallery3d";
 import { timelineRegistry } from "@/motion/registry/timeline";
 import { countdownRegistry } from "@/motion/registry/countdown";
@@ -35,7 +36,7 @@ import { transitionRegistry } from "@/motion/registry/transition";
 import { ambientEffectRegistry } from "@/motion/registry/ambient";
 import { backgroundPatternRegistry } from "@/motion/registry/background";
 import { bowRegistry } from "@/motion/registry/bow";
-import { colorThemeRegistry } from "@/motion/registry/theme";
+import { colorThemeRegistry, customThemeValue, parseCustomTheme } from "@/motion/registry/theme";
 import { saveProjectConfig, setGuestbookStatus, type SaveProjectPayload } from "./actions";
 import { defaultFrameContent, DEFAULT_VARIANT } from "./defaults";
 import { MediaDropzone, IMAGE_OR_VIDEO_ACCEPT, AUDIO_ACCEPT } from "./MediaDropzone";
@@ -114,6 +115,16 @@ function ThemeSwatchPicker({
   value: string;
   onChange: (key: string) => void;
 }) {
+  // The two custom hexes ride inside `value` itself as
+  // "custom:#bgHex|#textHex" (see theme.tsx) — so this tile is "selected"
+  // whenever that prefix is present, regardless of which exact colors, and
+  // falls back to reasonable default swatch colors when nothing's been
+  // picked yet.
+  const custom = parseCustomTheme(value);
+  const isCustom = custom !== null;
+  const bgColor = custom?.bg ?? "#f6f1ea";
+  const textColor = custom?.text ?? "#2b2621";
+
   return (
     <div className="grid grid-cols-2 gap-2">
       {Object.entries(colorThemeRegistry).map(([key, theme]) => (
@@ -139,6 +150,40 @@ function ThemeSwatchPicker({
           <span className={value === key ? "text-ink" : "text-ink-soft"}>{theme.label}</span>
         </button>
       ))}
+
+      {/* Two native `<input type="color">`s — background and text — each
+          wrapped in its own `<label>` so clicking the swatch or its
+          caption both open the OS/browser color picker. Picking either
+          one switches the whole theme to "custom" (onChange always writes
+          both colors together), so there's no separate "activate custom
+          mode" step. */}
+      <div
+        className={`col-span-2 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border px-3 py-2.5 text-sm transition-all ${
+          isCustom
+            ? "border-accent bg-accent/5 ring-1 ring-accent/20 shadow-sm"
+            : "border-line bg-transparent"
+        }`}
+      >
+        <span className={isCustom ? "text-ink" : "text-ink-soft"}>Tự chọn màu</span>
+        <label className="flex cursor-pointer items-center gap-1.5">
+          <input
+            type="color"
+            value={bgColor}
+            onChange={(e) => onChange(customThemeValue(e.target.value, textColor))}
+            className="h-7 w-7 flex-shrink-0 cursor-pointer rounded-full border border-black/10 bg-transparent p-0"
+          />
+          <span className="text-xs text-ink-soft">Nền{isCustom ? ` (${bgColor})` : ""}</span>
+        </label>
+        <label className="flex cursor-pointer items-center gap-1.5">
+          <input
+            type="color"
+            value={textColor}
+            onChange={(e) => onChange(customThemeValue(bgColor, e.target.value))}
+            className="h-7 w-7 flex-shrink-0 cursor-pointer rounded-full border border-black/10 bg-transparent p-0"
+          />
+          <span className="text-xs text-ink-soft">Chữ{isCustom ? ` (${textColor})` : ""}</span>
+        </label>
+      </div>
     </div>
   );
 }
@@ -295,6 +340,12 @@ const FRAME_LABELS: Record<FrameType, string> = {
   guestbook: "Sổ lưu bút",
   gift: "Mừng cưới",
   final: "Lời cảm ơn",
+};
+
+const CHAT_POSITION_REGISTRY: Record<string, { label: string }> = {
+  default: { label: "Mặc định (trôi trên ảnh bìa)" },
+  bottomLeft: { label: "Góc dưới trái (luôn hiện khi cuộn)" },
+  bottomRight: { label: "Góc dưới phải (luôn hiện khi cuộn)" },
 };
 
 export function ProjectEditor({
@@ -476,6 +527,11 @@ export function ProjectEditor({
     setConfig((prev) => ({ ...prev, settings: { ...prev.settings, bowStyle } }));
   }
 
+  function updateChatPosition(chatPosition: string) {
+    markDirty();
+    setConfig((prev) => ({ ...prev, settings: { ...prev.settings, chatPosition } }));
+  }
+
   function setEvents(events: EventItem[]) {
     markDirty();
     setConfig((prev) => ({ ...prev, events }));
@@ -641,7 +697,7 @@ export function ProjectEditor({
               <p className={labelClass}>Kiểu hiển thị</p>
               <VariantPicker
                 registry={familyRegistry}
-                value={frame.variant ?? "simple"}
+                value={frame.variant ?? "invitation"}
                 onChange={(v) => selectVariant(frame.id, v)}
               />
             </div>
@@ -1018,6 +1074,15 @@ export function ProjectEditor({
                 onChange={updateBowStyle}
               />
             </div>
+
+            <div className="border-t border-line pt-4">
+              <p className={labelClass}>Vị trí chat (lời chúc trôi trên màn hình)</p>
+              <VariantPicker
+                registry={CHAT_POSITION_REGISTRY}
+                value={config.settings.chatPosition}
+                onChange={updateChatPosition}
+              />
+            </div>
           </Accordion>
 
           <GroupLabel>Section trang cưới</GroupLabel>
@@ -1068,6 +1133,14 @@ export function ProjectEditor({
                   multiple={false}
                   accept={IMAGE_OR_VIDEO_ACCEPT}
                   formatsLabel="JPG, PNG, WEBP, GIF, MP4, MOV, WEBM"
+                />
+              </div>
+              <div className="pt-2">
+                <p className={labelClass}>Layout ảnh bìa</p>
+                <VariantPicker
+                  registry={heroLayoutRegistry}
+                  value={hero.variant ?? "full"}
+                  onChange={(v) => selectVariant(hero.id, v)}
                 />
               </div>
               <TextAreaField

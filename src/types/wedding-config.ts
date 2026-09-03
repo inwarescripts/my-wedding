@@ -206,6 +206,13 @@ export interface ProjectSettings {
    * Purely a flourish to soften an otherwise plain stretch; "none" by
    * default so it stays fully opt-in. */
   bowStyle: string;
+  /** Where the live guestbook-wishes stream (LiveWishesOverlay) sits.
+   * "default" keeps it exactly where it's always been — drifting over the
+   * Hero photo only, scrolling away with it like the rest of that section.
+   * "bottomLeft"/"bottomRight" instead pin it `fixed` to a screen corner,
+   * visible the whole time the guest scrolls — the TikTok-live-comments
+   * look — independent of which frame is currently in view. */
+  chatPosition: string;
 }
 
 export const defaultProjectSettings: ProjectSettings = {
@@ -234,6 +241,7 @@ export const defaultProjectSettings: ProjectSettings = {
     pattern: "dots",
   },
   bowStyle: "none",
+  chatPosition: "default",
 };
 
 export interface WeddingConfig {
