@@ -21,8 +21,13 @@ import { getColorThemePalette, themeCssVars } from "@/motion/registry/theme";
 import { startAutoScrollTour } from "@/lib/autoScrollTour";
 import { renderFrame } from "@/lib/frame-registry";
 
-// Short beat between the burst finishing and the guided scroll starting.
-const PAUSE_BEFORE_SCROLL_MS = 800;
+// Short beat after the burst winds down before the guided scroll starts.
+const PAUSE_BEFORE_SCROLL_MS = 300;
+
+// Start the scroll once the burst is mostly done rather than fully done —
+// waiting for the whole flurry made the guest sit through up to ~8s of
+// dead air on the longest variants.
+const BURST_WAIT_FRACTION = 0.55;
 
 export function WeddingRenderer({
   config,
@@ -57,7 +62,7 @@ export function WeddingRenderer({
         const burstDuration = Math.max(ambientBurstDuration, confettiBurstDuration);
         window.setTimeout(() => {
           startAutoScrollTour(config.settings.introSequence.scrollSpeed);
-        }, burstDuration + PAUSE_BEFORE_SCROLL_MS);
+        }, burstDuration * BURST_WAIT_FRACTION + PAUSE_BEFORE_SCROLL_MS);
       }
     }, 1300);
   }
