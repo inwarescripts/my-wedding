@@ -144,7 +144,17 @@ export function LiveWishesOverlay({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, transition: { duration: 1.1, ease: "easeInOut" } }}
               transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
-              className="w-fit max-w-full rounded-full bg-ivory/90 px-2 py-1 text-left leading-none shadow-sm backdrop-blur-sm md:px-3 md:py-1.5"
+              className="w-fit max-w-full rounded-full px-2 py-1 text-left leading-none shadow-sm backdrop-blur-sm md:px-3 md:py-1.5"
+              style={{
+                // A plain `bg-ivory` blends straight into the page — ivory
+                // *is* the site's own background. Mixing in a little `ink`
+                // (the theme's guaranteed-contrasting text color) keeps the
+                // bubble visibly a shade darker than whatever's behind it,
+                // in every color theme, light or dark, without hardcoding a
+                // color that would look wrong on some of them.
+                backgroundColor:
+                  "color-mix(in srgb, var(--color-ivory) 80%, var(--color-ink) 20%)",
+              }}
             >
               <span className="font-heading text-xs italic text-accent md:text-sm">{item.name}: </span>
               <span className="font-serif text-sm text-ink md:text-base">{item.message}</span>
