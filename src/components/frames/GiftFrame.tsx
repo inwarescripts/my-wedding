@@ -128,7 +128,7 @@ function EnvelopeGift({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group relative mx-auto mt-10 flex h-64 w-full max-w-sm items-end justify-center"
+        className="group relative mx-auto mt-10 flex h-72 w-full max-w-md items-end justify-center"
         aria-haspopup="dialog"
       >
         {/* Pivot both envelopes from the same bottom point, rotated
@@ -136,13 +136,29 @@ function EnvelopeGift({
         <span className="pointer-events-none absolute right-[22%] top-0 text-2xl text-gold transition-transform duration-500 group-hover:rotate-12">
           ✦
         </span>
-        <div className="absolute h-56 w-36 origin-bottom -translate-x-4 -rotate-[16deg] opacity-95 transition-transform duration-500 group-hover:-rotate-[22deg]">
-          <Image src={envelopeImage} alt="" fill sizes="160px" className="object-contain drop-shadow-xl" />
+        <div className="absolute h-64 w-40 origin-bottom -translate-x-4 -rotate-[16deg] opacity-95 transition-transform duration-500 group-hover:-rotate-[22deg]">
+          <div className="wedding-envelope-bounce h-full w-full" style={{ animationDelay: "0s" }}>
+            <Image src={envelopeImage} alt="" fill sizes="180px" className="object-contain drop-shadow-xl" />
+          </div>
         </div>
-        <div className="absolute z-10 h-64 w-40 origin-bottom translate-x-4 rotate-[16deg] transition-transform duration-500 group-hover:rotate-[22deg]">
-          <Image src={envelopeImage} alt="" fill sizes="180px" className="object-contain drop-shadow-2xl" />
+        <div className="absolute z-10 h-72 w-44 origin-bottom translate-x-4 rotate-[16deg] transition-transform duration-500 group-hover:rotate-[22deg]">
+          <div className="wedding-envelope-bounce h-full w-full" style={{ animationDelay: "0.25s" }}>
+            <Image src={envelopeImage} alt="" fill sizes="200px" className="object-contain drop-shadow-2xl" />
+          </div>
         </div>
       </button>
+      <style>{`
+        .wedding-envelope-bounce {
+          animation: wedding-envelope-bounce 2.2s ease-in-out infinite;
+        }
+        @keyframes wedding-envelope-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .wedding-envelope-bounce { animation: none; }
+        }
+      `}</style>
 
       <p className="mt-6 font-serif text-sm uppercase tracking-widest text-ink-soft/80">
         Nhấn để mở
