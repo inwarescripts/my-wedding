@@ -9,6 +9,7 @@ import type { GiftAccountItem } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";
 import { BowOrnament } from "@/motion/registry/bow";
+import { ENVELOPE_IMAGE } from "@/motion/registry/gift";
 
 function GiftCard({
   label,
@@ -106,7 +107,13 @@ function GiftModal({
   return createPortal(content, document.body);
 }
 
-function EnvelopeGift({ gifts }: { gifts: GiftAccountItem[] }) {
+function EnvelopeGift({
+  gifts,
+  envelopeImage,
+}: {
+  gifts: GiftAccountItem[];
+  envelopeImage: string;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -130,10 +137,10 @@ function EnvelopeGift({ gifts }: { gifts: GiftAccountItem[] }) {
           ✦
         </span>
         <div className="absolute h-56 w-36 origin-bottom -translate-x-4 -rotate-[16deg] opacity-95 transition-transform duration-500 group-hover:-rotate-[22deg]">
-          <Image src="/thiep.webp" alt="" fill sizes="160px" className="object-contain drop-shadow-xl" />
+          <Image src={envelopeImage} alt="" fill sizes="160px" className="object-contain drop-shadow-xl" />
         </div>
         <div className="absolute z-10 h-64 w-40 origin-bottom translate-x-4 rotate-[16deg] transition-transform duration-500 group-hover:rotate-[22deg]">
-          <Image src="/thiep.webp" alt="" fill sizes="180px" className="object-contain drop-shadow-2xl" />
+          <Image src={envelopeImage} alt="" fill sizes="180px" className="object-contain drop-shadow-2xl" />
         </div>
       </button>
 
@@ -183,6 +190,8 @@ export function GiftFrame({
   bowStyle?: string;
   variant?: string;
 }) {
-  if (variant === "envelope") return <EnvelopeGift gifts={gifts} />;
+  if (variant === "envelope" || variant === "envelopeRed") {
+    return <EnvelopeGift gifts={gifts} envelopeImage={ENVELOPE_IMAGE[variant]} />;
+  }
   return <DefaultGift gifts={gifts} bowStyle={bowStyle} />;
 }
