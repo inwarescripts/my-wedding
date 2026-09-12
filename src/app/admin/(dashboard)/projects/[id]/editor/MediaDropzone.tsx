@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import {
   DndContext,
@@ -265,8 +266,17 @@ function SortableThumb({ url, onRemove }: { url: string; onRemove: () => void })
           </span>
         </div>
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={url} alt="" className="h-full w-full object-cover" />
+        // Thumbnails only need to be a few hundred px — letting Next serve a
+        // resized/re-encoded version instead of the full original avoids
+        // downloading & decoding multi-MB source photos for a tiny grid cell,
+        // which is what made this grid lag once a project had many uploads.
+        <Image
+          src={url}
+          alt=""
+          fill
+          sizes="(min-width: 640px) 25vw, 33vw"
+          className="object-cover"
+        />
       )}
       <button
         type="button"
