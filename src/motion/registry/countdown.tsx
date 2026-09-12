@@ -309,30 +309,24 @@ export function CountdownVariant({
   const units = useUnits(weddingDate);
 
   return (
-    // Banded like Events/Family — a plain-ivory section on either side of
-    // it would otherwise blur into one long, undifferentiated stretch of
-    // page, especially since this section itself is visually light (a row
-    // of numbers, no photo).
-    <div className="border-y border-line bg-ivory-deep">
-      <Section className="text-center">
-        <Eyebrow>Đếm ngược</Eyebrow>
-        <Divider />
-        {weddingDateLunar && (
-          <p className="font-serif text-lg text-ink-soft">{weddingDateLunar}</p>
-        )}
+    <Section className="text-center">
+      <Eyebrow>Đếm ngược</Eyebrow>
+      <Divider />
+      {weddingDateLunar && (
+        <p className="font-serif text-lg text-ink-soft">{weddingDateLunar}</p>
+      )}
 
-        {variant === "flipCard" ? (
-          <FlipCard units={units} />
-        ) : variant === "minimalType" ? (
-          <MinimalType units={units} />
-        ) : variant === "progressRing" ? (
-          <ProgressRingRow units={units} />
-        ) : (
-          <Classic units={units} />
-        )}
+      {variant === "flipCard" ? (
+        <FlipCard units={units} />
+      ) : variant === "minimalType" ? (
+        <MinimalType units={units} />
+      ) : variant === "progressRing" ? (
+        <ProgressRingRow units={units} />
+      ) : (
+        <Classic units={units} />
+      )}
 
-        <BowOrnament variant={bowStyle} className="mt-10" />
-      </Section>
-    </div>
+      <BowOrnament variant={bowStyle} className="mt-10" />
+    </Section>
   );
 }

@@ -250,11 +250,14 @@ function OpenedFamily(props: AnnouncementProps) {
   return (
     <Reveal preset="fadeUp" className="mx-auto mt-12 max-w-3xl">
       <div className="grid overflow-hidden rounded-sm border border-line shadow-flat md:grid-cols-2">
-        <div className="relative flex flex-col items-center justify-center gap-6 bg-ink px-8 py-16 text-center text-ivory">
+        {/* Fixed dark cover + light text, not ink/ivory — that pair swaps
+            which one is dark on "flip" color themes (see the same fix in
+            Final.tsx), and this cover panel needs to stay dark regardless. */}
+        <div className="relative flex flex-col items-center justify-center gap-6 bg-[#1a1512] px-8 py-16 text-center text-[#f6f1ea]">
           <DaisyCluster className="pointer-events-none h-14 w-44" />
           <div>
-            <p className="font-script text-5xl leading-none text-ivory">Thiệp Mời</p>
-            <p className="mt-3 text-xs uppercase tracking-[0.4em] text-ivory/60">
+            <p className="font-script text-5xl leading-none text-[#f6f1ea]">Thiệp Mời</p>
+            <p className="mt-3 text-xs uppercase tracking-[0.4em] text-[#f6f1ea]/60">
               {props.couple.displayName}
             </p>
           </div>
@@ -506,12 +509,8 @@ export function Family({
   event?: EventItem;
 }) {
   return (
-    // Same themed "banded section" treatment as Events — ivory-deep/line are
-    // CSS vars from the project's own colour theme (see themeCssVars), so
-    // this always matches the configured theme instead of a fixed colour.
-    <div className="border-y border-line bg-ivory-deep">
-      <Section className="text-center">
-        <Eyebrow>Gia đình hai bên</Eyebrow>
+    <Section className="text-center">
+      <Eyebrow>Gia đình hai bên</Eyebrow>
         <Divider />
 
         {variant === "invitation" ? (
@@ -537,7 +536,6 @@ export function Family({
           // default as any other unrecognised value, same as before.
           <InvitationFamily content={content} couple={couple} event={event} />
         )}
-      </Section>
-    </div>
+    </Section>
   );
 }

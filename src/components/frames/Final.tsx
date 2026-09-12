@@ -12,10 +12,11 @@ export function Final({ couple }: { couple: CoupleInfo }) {
   const backgroundImage = couple.coverImage;
 
   return (
-    // Fixed dark scrim + light text (not the theme's ink/ivory tokens,
-    // which swap light/dark on "flip" themes) — this photo caption must
-    // stay dark-with-light-text regardless of the active color theme.
-    <section className="relative flex h-[90svh] min-h-[560px] w-full items-center justify-center overflow-hidden bg-[#1a1512] text-[#f6f1ea]">
+    // Same theme background/text as every other section (bg-ivory/text-ink)
+    // — the cover photo sits behind at low opacity as a soft watermark
+    // rather than a full-contrast dark scrim, so this reads as one
+    // continuous page instead of a separate dark band at the very end.
+    <section className="relative flex h-[90svh] min-h-[560px] w-full items-center justify-center overflow-hidden bg-ivory text-ink">
       {backgroundImage && (
         <div ref={parallaxRef} className="absolute inset-0 -top-[8%] h-[116%]">
           {isVideoUrl(backgroundImage) ? (
@@ -25,7 +26,7 @@ export function Final({ couple }: { couple: CoupleInfo }) {
               muted
               loop
               playsInline
-              className="h-full w-full object-cover opacity-30"
+              className="h-full w-full object-cover opacity-20"
             />
           ) : (
             <Image
@@ -34,12 +35,11 @@ export function Final({ couple }: { couple: CoupleInfo }) {
               fill
               sizes="100vw"
               quality={90}
-              className="object-cover opacity-30"
+              className="object-cover opacity-20"
             />
           )}
         </div>
       )}
-      <div className="absolute inset-0 bg-[#1a1512]/50" />
       <Fireworks contained />
 
       <div className="relative z-10 px-6 text-center">
@@ -47,12 +47,12 @@ export function Final({ couple }: { couple: CoupleInfo }) {
           <p className="font-script text-5xl md:text-7xl">{couple.displayName}</p>
         </Reveal>
         <Reveal preset="fadeUp" delay={0.2}>
-          <p className="mt-6 font-serif text-lg text-[#f6f1ea]/80 md:text-xl">
+          <p className="mt-6 font-serif text-lg text-ink-soft md:text-xl">
             Cảm ơn vì đã là một phần trong câu chuyện của chúng tôi.
           </p>
         </Reveal>
         <Reveal preset="fade" delay={0.4}>
-          <p className="mt-10 text-xs tracking-[0.4em] uppercase text-[#f6f1ea]/50">
+          <p className="mt-10 text-xs tracking-[0.4em] uppercase text-ink-soft/70">
             #{couple.displayName.replace(/\s+/g, "")}Wedding
           </p>
         </Reveal>

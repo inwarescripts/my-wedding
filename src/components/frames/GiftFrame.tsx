@@ -24,10 +24,11 @@ function GiftCard({
       <p className={`font-script text-accent ${compact ? "text-xl sm:text-2xl" : "text-3xl"}`}>
         {label}
       </p>
-      <div className="mx-auto my-3 flex justify-center sm:my-5">
+      {/* QR codes need solid light/dark contrast to scan regardless of theme. */}
+      <div className="mx-auto my-3 flex w-fit justify-center rounded-md bg-white p-2 sm:my-5">
         <QRCodeSVG
           value={qrValue}
-          size={compact ? 96 : 140}
+          size={compact ? 88 : 132}
           bgColor="transparent"
           fgColor="#2b2621"
         />
@@ -109,57 +110,39 @@ function EnvelopeGift({ gifts }: { gifts: GiftAccountItem[] }) {
   const [open, setOpen] = useState(false);
 
   return (
-    // `ivory-deep` tinted darker with the theme's accent via a multiply
-    // overlay (multiply only ever darkens, so it stays rich instead of the
-    // muddy grey a flat black mix gives pale themes). A solid overlay +
-    // `mix-blend-mode` rather than `background-blend-mode` on a gradient —
-    // the gradient version broke on iOS Safari, which fails to resolve
-    // `var()` inside `linear-gradient()` stops.
-    <div
-      className="relative overflow-hidden border-y border-line"
-      style={{ backgroundColor: "var(--color-ivory-deep)" }}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{ backgroundColor: "var(--color-accent)", mixBlendMode: "multiply" }}
-      />
-      <Section className="relative text-center">
-        {/* Fixed cream/gold text, not ink/accent — this background is
-            darkened past what those tokens are calibrated for. */}
-        <p className="mb-3 font-script text-3xl leading-none text-gold md:text-4xl">Mừng cưới</p>
-        <Divider />
-        <p className="mx-auto max-w-md font-serif text-lg text-[#f6ead0]">
-          Tình cảm của bạn là điều quý giá nhất. Nhấn vào thiệp để gửi lời chúc
-          bằng một món quà nhỏ.
-        </p>
+    <Section className="text-center">
+      <Eyebrow>Mừng cưới</Eyebrow>
+      <Divider />
+      <p className="mx-auto max-w-md font-serif text-lg text-ink-soft">
+        Tình cảm của bạn là điều quý giá nhất. Nhấn vào thiệp để gửi lời chúc
+        bằng một món quà nhỏ.
+      </p>
 
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="group relative mx-auto mt-10 flex h-64 w-full max-w-sm items-end justify-center"
-          aria-haspopup="dialog"
-        >
-          {/* Pivot both envelopes from the same bottom point, rotated
-              outward, so they read as a "V". */}
-          <span className="pointer-events-none absolute right-[22%] top-0 text-2xl text-gold transition-transform duration-500 group-hover:rotate-12">
-            ✦
-          </span>
-          <div className="absolute h-56 w-36 origin-bottom -translate-x-4 -rotate-[16deg] opacity-95 transition-transform duration-500 group-hover:-rotate-[22deg]">
-            <Image src="/thiep.webp" alt="" fill sizes="160px" className="object-contain drop-shadow-xl" />
-          </div>
-          <div className="absolute z-10 h-64 w-40 origin-bottom translate-x-4 rotate-[16deg] transition-transform duration-500 group-hover:rotate-[22deg]">
-            <Image src="/thiep.webp" alt="" fill sizes="180px" className="object-contain drop-shadow-2xl" />
-          </div>
-        </button>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="group relative mx-auto mt-10 flex h-64 w-full max-w-sm items-end justify-center"
+        aria-haspopup="dialog"
+      >
+        {/* Pivot both envelopes from the same bottom point, rotated
+            outward, so they read as a "V". */}
+        <span className="pointer-events-none absolute right-[22%] top-0 text-2xl text-gold transition-transform duration-500 group-hover:rotate-12">
+          ✦
+        </span>
+        <div className="absolute h-56 w-36 origin-bottom -translate-x-4 -rotate-[16deg] opacity-95 transition-transform duration-500 group-hover:-rotate-[22deg]">
+          <Image src="/thiep.webp" alt="" fill sizes="160px" className="object-contain drop-shadow-xl" />
+        </div>
+        <div className="absolute z-10 h-64 w-40 origin-bottom translate-x-4 rotate-[16deg] transition-transform duration-500 group-hover:rotate-[22deg]">
+          <Image src="/thiep.webp" alt="" fill sizes="180px" className="object-contain drop-shadow-2xl" />
+        </div>
+      </button>
 
-        <p className="mt-6 font-serif text-sm uppercase tracking-widest text-[#f6ead0]/80">
-          Nhấn để mở
-        </p>
-      </Section>
+      <p className="mt-6 font-serif text-sm uppercase tracking-widest text-ink-soft/80">
+        Nhấn để mở
+      </p>
 
       <GiftModal gifts={gifts} open={open} onClose={() => setOpen(false)} />
-    </div>
+    </Section>
   );
 }
 
@@ -171,25 +154,23 @@ function DefaultGift({
   bowStyle: string;
 }) {
   return (
-    <div className="border-y border-line bg-ivory-deep">
-      <Section className="text-center">
-        <Eyebrow>Mừng cưới</Eyebrow>
-        <Divider />
-        <BowOrnament variant={bowStyle} className="-mt-2 mb-4" />
-        <p className="mx-auto max-w-md font-serif text-lg text-ink-soft">
-          Tình cảm của bạn là điều quý giá nhất. Nếu muốn gửi lời chúc bằng một
-          món quà nhỏ, chúng tôi xin trân trọng đón nhận.
-        </p>
+    <Section className="text-center">
+      <Eyebrow>Mừng cưới</Eyebrow>
+      <Divider />
+      <BowOrnament variant={bowStyle} className="-mt-2 mb-4" />
+      <p className="mx-auto max-w-md font-serif text-lg text-ink-soft">
+        Tình cảm của bạn là điều quý giá nhất. Nếu muốn gửi lời chúc bằng một
+        món quà nhỏ, chúng tôi xin trân trọng đón nhận.
+      </p>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          {gifts.map((gift, i) => (
-            <Reveal key={gift.id} preset={i % 2 === 0 ? "fadeRight" : "fadeLeft"}>
-              <GiftCard {...gift} />
-            </Reveal>
-          ))}
-        </div>
-      </Section>
-    </div>
+      <div className="mt-10 grid gap-6 md:grid-cols-2">
+        {gifts.map((gift, i) => (
+          <Reveal key={gift.id} preset={i % 2 === 0 ? "fadeRight" : "fadeLeft"}>
+            <GiftCard {...gift} />
+          </Reveal>
+        ))}
+      </div>
+    </Section>
   );
 }
 

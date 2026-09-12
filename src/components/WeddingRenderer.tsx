@@ -17,6 +17,7 @@ import {
   CONFETTI_CANNON_BURST_DURATION_MS,
 } from "@/motion/registry/ambient";
 import { backgroundStyle } from "@/motion/registry/background";
+import { LazyMount } from "@/components/LazyMount";
 import { getColorThemePalette, themeCssVars } from "@/motion/registry/theme";
 import { startAutoScrollTour } from "@/lib/autoScrollTour";
 import { renderFrame } from "@/lib/frame-registry";
@@ -133,15 +134,28 @@ export function WeddingRenderer({
         {config.settings.chatPosition !== "default" && (
           <LiveWishesOverlay projectId={config.projectId} position={config.settings.chatPosition} />
         )}
-        {orderedFrames.map((frame) => (
-          // Anchor the admin editor's "focus preview" scroll-to on this id —
-          // see focusPreview() in ProjectEditor.tsx.
-          <div key={frame.id} id={`frame-${frame.id}`}>
+        {orderedFrames.map((frame, i) => {
+          const section = (
             <SectionTransition variant={config.settings.transitionVariant}>
               {renderFrame(frame, ctx)}
             </SectionTransition>
-          </div>
-        ))}
+          );
+          return (
+            // Anchor the admin editor's "focus preview" scroll-to on this id
+            // — see focusPreview() in ProjectEditor.tsx.
+            <div key={frame.id} id={`frame-${frame.id}`}>
+              {/* First section (hero) renders immediately — it's what the
+                  guest sees on load, so it must never wait on an observer
+                  tick. Everything after is lazy-mounted: every section's
+                  animations (WebGL scenes, GSAP scroll triggers, infinite
+                  framer-motion loops) otherwise start running the instant
+                  the page loads regardless of scroll position, stacking the
+                  cost of the whole page at once instead of just what's
+                  visible. */}
+              {i === 0 ? section : <LazyMount>{section}</LazyMount>}
+            </div>
+          );
+        })}
       </main>
     </>
   );

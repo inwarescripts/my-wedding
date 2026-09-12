@@ -12,13 +12,7 @@ function formatDate(iso: string) {
 
 export function Events({ events }: { events: EventItem[] }) {
   return (
-    // ivory-deep + line border are theme CSS vars (see themeCssVars in
-    // motion/registry/theme.tsx, applied on <main> in WeddingRenderer) —
-    // same "banded section" treatment as the landing page's bottom CTA, so
-    // this backdrop always matches whichever colour theme the project has
-    // configured instead of a fixed colour that could clash with it.
-    <div className="border-y border-line bg-ivory-deep">
-      <Section className="text-center">
+    <Section className="text-center">
         <Eyebrow>Lễ cưới</Eyebrow>
         <Divider />
 
@@ -71,6 +65,5 @@ export function Events({ events }: { events: EventItem[] }) {
           </div>
         </div>
       </Section>
-    </div>
   );
 }

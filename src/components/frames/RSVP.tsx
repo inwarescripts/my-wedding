@@ -26,7 +26,6 @@ export function RSVP({
   );
 
   return (
-    <div className="border-y border-line bg-ivory-deep">
     <Section className="text-center">
       <Reveal preset="fadeUp" className="mx-auto mb-2 h-28 w-28 md:h-32 md:w-32">
         <div className="wedding-bouquet-float relative h-full w-full">
@@ -127,6 +126,5 @@ export function RSVP({
         )}
       </Reveal>
     </Section>
-    </div>
   );
 }
