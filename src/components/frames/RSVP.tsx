@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import type { RsvpContent } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";
@@ -11,22 +13,152 @@ import { submitRsvp, type SubmitState } from "@/app/actions/public";
 const inputClass =
   "w-full border-0 border-b border-line bg-transparent px-1 py-3 font-serif text-lg text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none";
 
-export function RSVP({
+function RsvpForm({
   projectId,
   content,
-  bowStyle = "none",
 }: {
   projectId: string;
   content: RsvpContent;
-  bowStyle?: string;
 }) {
   const [state, formAction, pending] = useActionState<SubmitState, FormData>(
     submitRsvp.bind(null, projectId),
     undefined
   );
 
+  if (state?.success) {
+    return (
+      <div className="card-flat px-8 py-12 text-center">
+        <p className="font-heading text-2xl italic text-ink">Cảm ơn bạn!</p>
+        <p className="mt-2 font-serif text-ink-soft">
+          Chúng tôi đã nhận được phản hồi của bạn.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <Section className="text-center">
+    <form action={formAction} className="space-y-6 text-left">
+      <input required name="name" placeholder="Họ và tên" className={inputClass} />
+      <input name="phone" placeholder="Số điện thoại" className={inputClass} />
+
+      <div className="flex gap-3 pt-2">
+        <label className="flex-1">
+          <input type="radio" name="attending" value="yes" defaultChecked className="peer sr-only" />
+          <span className="block cursor-pointer border border-line px-4 py-3 text-center text-sm tracking-widest uppercase text-ink-soft transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory">
+            Sẽ tham dự
+          </span>
+        </label>
+        <label className="flex-1">
+          <input type="radio" name="attending" value="no" className="peer sr-only" />
+          <span className="block cursor-pointer border border-line px-4 py-3 text-center text-sm tracking-widest uppercase text-ink-soft transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory">
+            Xin phép vắng
+          </span>
+        </label>
+      </div>
+
+      {content.showGuestCount && (
+        <label className="block">
+          <span className="mb-1 block text-xs tracking-[0.2em] uppercase text-ink-soft">
+            Số lượng khách
+          </span>
+          <input
+            name="guestCount"
+            type="number"
+            min={1}
+            defaultValue={1}
+            className={inputClass}
+          />
+        </label>
+      )}
+
+      {content.showMessage && (
+        <textarea
+          name="message"
+          placeholder="Lời nhắn gửi đến cô dâu chú rể"
+          rows={3}
+          className={inputClass}
+        />
+      )}
+
+      {state?.error && (
+        <p className="text-sm text-red-700" role="alert">
+          {state.error}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="w-full border border-ink bg-ink py-4 text-sm tracking-[0.2em] uppercase text-ivory transition-opacity hover:opacity-85 disabled:opacity-50"
+      >
+        {pending ? "Đang gửi..." : "Gửi xác nhận"}
+      </button>
+    </form>
+  );
+}
+
+// Same portal pattern as GiftFrame's GiftModal — <body>-portalled so an
+// ancestor section transition can't hijack `position: fixed`.
+function RsvpModal({
+  projectId,
+  content,
+  open,
+  onClose,
+}: {
+  projectId: string;
+  content: RsvpContent;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  const modalContent = (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink/80 p-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, pointerEvents: "none" }}
+          onClick={onClose}
+        >
+          <motion.div
+            className="relative my-auto w-full max-w-md rounded-lg bg-ivory p-6"
+            initial={{ scale: 0.92, opacity: 0, y: 12 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Đóng"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-line hover:text-ink"
+            >
+              ✕
+            </button>
+            <p className="mb-6 text-center font-heading text-xl text-ink">
+              Xác nhận tham dự
+            </p>
+            <RsvpForm projectId={projectId} content={content} />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  if (!mounted) return null;
+  return createPortal(modalContent, document.body);
+}
+
+function RsvpIntro({ bowStyle }: { bowStyle: string }) {
+  return (
+    <>
       <Reveal preset="fadeUp" className="mx-auto mb-2 h-28 w-28 md:h-32 md:w-32">
         <div className="wedding-bouquet-float relative h-full w-full">
           <Image
@@ -56,74 +188,53 @@ export function RSVP({
       <p className="mx-auto max-w-md font-serif text-lg text-ink-soft">
         Sự hiện diện của bạn là món quà quý giá nhất với chúng tôi
       </p>
+    </>
+  );
+}
 
+export function RSVP({
+  projectId,
+  content,
+  bowStyle = "none",
+  variant = "form",
+}: {
+  projectId: string;
+  content: RsvpContent;
+  bowStyle?: string;
+  variant?: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (variant === "modal") {
+    return (
+      <Section className="text-center">
+        <RsvpIntro bowStyle={bowStyle} />
+
+        <Reveal preset="fadeUp" className="mx-auto mt-10 max-w-md">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="w-full border border-ink bg-ink py-4 text-sm tracking-[0.2em] uppercase text-ivory transition-opacity hover:opacity-85"
+          >
+            Xác nhận tham dự
+          </button>
+        </Reveal>
+
+        <RsvpModal
+          projectId={projectId}
+          content={content}
+          open={open}
+          onClose={() => setOpen(false)}
+        />
+      </Section>
+    );
+  }
+
+  return (
+    <Section className="text-center">
+      <RsvpIntro bowStyle={bowStyle} />
       <Reveal preset="fadeUp" className="mx-auto mt-10 max-w-md text-left">
-        {state?.success ? (
-          <div className="card-flat px-8 py-12 text-center">
-            <p className="font-heading text-2xl italic text-ink">Cảm ơn bạn!</p>
-            <p className="mt-2 font-serif text-ink-soft">
-              Chúng tôi đã nhận được phản hồi của bạn.
-            </p>
-          </div>
-        ) : (
-          <form action={formAction} className="space-y-6">
-            <input required name="name" placeholder="Họ và tên" className={inputClass} />
-            <input name="phone" placeholder="Số điện thoại" className={inputClass} />
-
-            <div className="flex gap-3 pt-2">
-              <label className="flex-1">
-                <input type="radio" name="attending" value="yes" defaultChecked className="peer sr-only" />
-                <span className="block cursor-pointer border border-line px-4 py-3 text-center text-sm tracking-widest uppercase text-ink-soft transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory">
-                  Sẽ tham dự
-                </span>
-              </label>
-              <label className="flex-1">
-                <input type="radio" name="attending" value="no" className="peer sr-only" />
-                <span className="block cursor-pointer border border-line px-4 py-3 text-center text-sm tracking-widest uppercase text-ink-soft transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:text-ivory">
-                  Xin phép vắng
-                </span>
-              </label>
-            </div>
-
-            {content.showGuestCount && (
-              <label className="block">
-                <span className="mb-1 block text-xs tracking-[0.2em] uppercase text-ink-soft">
-                  Số lượng khách
-                </span>
-                <input
-                  name="guestCount"
-                  type="number"
-                  min={1}
-                  defaultValue={1}
-                  className={inputClass}
-                />
-              </label>
-            )}
-
-            {content.showMessage && (
-              <textarea
-                name="message"
-                placeholder="Lời nhắn gửi đến cô dâu chú rể"
-                rows={3}
-                className={inputClass}
-              />
-            )}
-
-            {state?.error && (
-              <p className="text-sm text-red-700" role="alert">
-                {state.error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={pending}
-              className="w-full border border-ink bg-ink py-4 text-sm tracking-[0.2em] uppercase text-ivory transition-opacity hover:opacity-85 disabled:opacity-50"
-            >
-              {pending ? "Đang gửi..." : "Gửi xác nhận"}
-            </button>
-          </form>
-        )}
+        <RsvpForm projectId={projectId} content={content} />
       </Reveal>
     </Section>
   );

@@ -144,14 +144,8 @@ export function WeddingRenderer({
             // Anchor the admin editor's "focus preview" scroll-to on this id
             // — see focusPreview() in ProjectEditor.tsx.
             <div key={frame.id} id={`frame-${frame.id}`}>
-              {/* First section (hero) renders immediately — it's what the
-                  guest sees on load, so it must never wait on an observer
-                  tick. Everything after is lazy-mounted: every section's
-                  animations (WebGL scenes, GSAP scroll triggers, infinite
-                  framer-motion loops) otherwise start running the instant
-                  the page loads regardless of scroll position, stacking the
-                  cost of the whole page at once instead of just what's
-                  visible. */}
+              {/* First section (hero) renders immediately — everything
+                  after is lazy-mounted (see LazyMount). */}
               {i === 0 ? section : <LazyMount>{section}</LazyMount>}
             </div>
           );

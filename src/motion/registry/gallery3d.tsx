@@ -173,10 +173,10 @@ export function Gallery3dVariant({
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
-    const isSmall = window.matchMedia("(max-width: 640px)").matches;
-    // One-time client-only capability detection (WebGL/viewport); no external subscription to attach to.
+    // Gate on actual capability, not viewport width — most phones are
+    // ≤640px, so a width check was disabling this for nearly all mobile.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUse3d(variant === "floatingPhotos" && !prefersReduced && !isSmall && hasWebGL());
+    setUse3d(variant === "floatingPhotos" && !prefersReduced && hasWebGL());
   }, [variant]);
 
   return (

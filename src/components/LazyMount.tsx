@@ -4,22 +4,28 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 /**
  * Defers mounting `children` until the wrapper scrolls near the viewport,
- * then mounts them for good. Every frame section on the public wedding page
- * currently mounts (and starts animating — WebGL scenes, GSAP scroll
- * triggers, infinite framer-motion loops) the instant the page loads,
- * regardless of scroll position, which stacks the cost of every section at
- * once instead of just the one actually in view. `rootMargin` pre-loads
- * well ahead of arrival so content is already settled by the time a guest
- * scrolls to it — IntersectionObserver correctly accounts for a scrollable
- * ancestor's clipped viewport too, so this also lazy-mounts sections inside
- * the admin editor's scrollable preview pane.
+ * then mounts them for good — avoids every section's animations (WebGL,
+ * GSAP scroll triggers, framer-motion loops) starting at once on page load
+ * regardless of scroll position. `rootMargin` pre-loads ahead of arrival so
+ * content is already settled by the time a guest scrolls to it.
+ *
+ * The placeholder reserves `minHeight` before mounting — collapsing to 0px
+ * let a fast scroll fling pass straight through it before the
+ * IntersectionObserver callback fired, so it ended up mounting (inserting
+ * real height) only after that spot had already scrolled above the
+ * viewport, shoving the page the guest was reading further down and
+ * reading as a sudden jump. Reserving roughly a section's worth of space
+ * up front means there's always something to intersect before it's
+ * scrolled past.
  */
 export function LazyMount({
   children,
   rootMargin = "800px 0px",
+  minHeight = "60vh",
 }: {
   children: ReactNode;
   rootMargin?: string;
+  minHeight?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -42,5 +48,9 @@ export function LazyMount({
     return () => observer.disconnect();
   }, [visible, rootMargin]);
 
-  return <div ref={ref}>{visible ? children : null}</div>;
+  return (
+    <div ref={ref} style={visible ? undefined : { minHeight }}>
+      {visible ? children : null}
+    </div>
+  );
 }

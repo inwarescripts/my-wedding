@@ -12,10 +12,8 @@ export function Final({ couple }: { couple: CoupleInfo }) {
   const backgroundImage = couple.coverImage;
 
   return (
-    // Same theme background/text as every other section (bg-ivory/text-ink)
-    // — the cover photo sits behind at low opacity as a soft watermark
-    // rather than a full-contrast dark scrim, so this reads as one
-    // continuous page instead of a separate dark band at the very end.
+    // Same theme background/text as every other section — the cover photo
+    // is a low-opacity watermark, not a full-contrast dark scrim.
     <section className="relative flex h-[90svh] min-h-[560px] w-full items-center justify-center overflow-hidden bg-ivory text-ink">
       {backgroundImage && (
         <div ref={parallaxRef} className="absolute inset-0 -top-[8%] h-[116%]">

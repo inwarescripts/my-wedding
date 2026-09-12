@@ -250,9 +250,8 @@ function OpenedFamily(props: AnnouncementProps) {
   return (
     <Reveal preset="fadeUp" className="mx-auto mt-12 max-w-3xl">
       <div className="grid overflow-hidden rounded-sm border border-line shadow-flat md:grid-cols-2">
-        {/* Fixed dark cover + light text, not ink/ivory — that pair swaps
-            which one is dark on "flip" color themes (see the same fix in
-            Final.tsx), and this cover panel needs to stay dark regardless. */}
+        {/* Fixed dark cover, not ink/ivory — that pair swaps light/dark on
+            "flip" color themes (same fix as Final.tsx). */}
         <div className="relative flex flex-col items-center justify-center gap-6 bg-[#1a1512] px-8 py-16 text-center text-[#f6f1ea]">
           <DaisyCluster className="pointer-events-none h-14 w-44" />
           <div>

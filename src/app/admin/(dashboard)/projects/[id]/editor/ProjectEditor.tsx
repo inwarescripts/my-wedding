@@ -30,6 +30,7 @@ import { familyRegistry } from "@/motion/registry/family";
 import { heroLayoutRegistry } from "@/motion/registry/heroLayout";
 import { gallery3dRegistry } from "@/motion/registry/gallery3d";
 import { giftRegistry } from "@/motion/registry/gift";
+import { rsvpRegistry } from "@/motion/registry/rsvp";
 import { timelineRegistry } from "@/motion/registry/timeline";
 import { countdownRegistry } from "@/motion/registry/countdown";
 import { typographyRegistry } from "@/motion/registry/typography";
@@ -738,10 +739,20 @@ export function ProjectEditor({
         );
       case "rsvp":
         return (
-          <RsvpSection
-            content={frame.content as RsvpContent}
-            onChange={(c) => updateFrameContent(frame.id, c)}
-          />
+          <>
+            <RsvpSection
+              content={frame.content as RsvpContent}
+              onChange={(c) => updateFrameContent(frame.id, c)}
+            />
+            <div className="pt-2">
+              <p className={labelClass}>Kiểu hiển thị</p>
+              <VariantPicker
+                registry={rsvpRegistry}
+                value={frame.variant ?? "form"}
+                onChange={(v) => selectVariant(frame.id, v)}
+              />
+            </div>
+          </>
         );
       case "guestbook":
         return <GuestbookSection items={guestbook} onModerate={handleGuestbookStatus} />;

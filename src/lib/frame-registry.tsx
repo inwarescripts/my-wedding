@@ -95,7 +95,12 @@ export function renderFrame(frame: FrameConfig, ctx: RenderFrameContext) {
       return <MapFrame content={frame.content as MapContent} />;
     case "rsvp":
       return (
-        <RSVP projectId={ctx.projectId} content={frame.content as RsvpContent} bowStyle={ctx.bowStyle} />
+        <RSVP
+          projectId={ctx.projectId}
+          content={frame.content as RsvpContent}
+          bowStyle={ctx.bowStyle}
+          variant={frame.variant}
+        />
       );
     case "guestbook":
       return <Guestbook projectId={ctx.projectId} seed={ctx.guestbook} />;
