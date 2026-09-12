@@ -29,6 +29,7 @@ import { scheduleIconRegistry, ScheduleIcon } from "@/motion/registry/scheduleIc
 import { familyRegistry } from "@/motion/registry/family";
 import { heroLayoutRegistry } from "@/motion/registry/heroLayout";
 import { gallery3dRegistry } from "@/motion/registry/gallery3d";
+import { giftRegistry } from "@/motion/registry/gift";
 import { timelineRegistry } from "@/motion/registry/timeline";
 import { countdownRegistry } from "@/motion/registry/countdown";
 import { typographyRegistry } from "@/motion/registry/typography";
@@ -745,7 +746,19 @@ export function ProjectEditor({
       case "guestbook":
         return <GuestbookSection items={guestbook} onModerate={handleGuestbookStatus} />;
       case "gift":
-        return <GiftSection gifts={config.gifts} onChange={setGifts} />;
+        return (
+          <>
+            <GiftSection gifts={config.gifts} onChange={setGifts} />
+            <div className="pt-2">
+              <p className={labelClass}>Kiểu hiển thị</p>
+              <VariantPicker
+                registry={giftRegistry}
+                value={frame.variant ?? "default"}
+                onChange={(v) => selectVariant(frame.id, v)}
+              />
+            </div>
+          </>
+        );
       case "final":
         return (
           <p className="text-sm text-ink-soft">

@@ -100,7 +100,7 @@ export function renderFrame(frame: FrameConfig, ctx: RenderFrameContext) {
     case "guestbook":
       return <Guestbook projectId={ctx.projectId} seed={ctx.guestbook} />;
     case "gift":
-      return <GiftFrame gifts={ctx.gifts} bowStyle={ctx.bowStyle} />;
+      return <GiftFrame gifts={ctx.gifts} bowStyle={ctx.bowStyle} variant={frame.variant} />;
     case "final":
       return <Final couple={ctx.couple} />;
     default:

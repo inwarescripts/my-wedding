@@ -41,4 +41,5 @@ export const DEFAULT_VARIANT: Partial<Record<FrameType, string>> = {
   timeline: "alternating",
   family: "invitation",
   countdown: "classic",
+  gift: "default",
 };
