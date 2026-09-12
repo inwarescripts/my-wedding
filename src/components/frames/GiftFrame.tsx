@@ -45,12 +45,9 @@ function GiftCard({
   );
 }
 
-// Modal that lists the configured gift accounts — shared between variants:
-// the default grid opens the same accounts inline, the envelope variant
-// reveals them only once tapped. Portalled to <body> for the same reason as
-// the gallery Lightbox (see gallery.tsx) — an ancestor section transition can
-// turn `position: fixed` here into "fixed to that ancestor" instead of the
-// real viewport.
+// Shared account-list modal — the default variant opens it inline, the
+// envelope variant reveals it on tap. Portalled to <body> like the gallery
+// Lightbox, so an ancestor's section transition can't hijack `position: fixed`.
 function GiftModal({
   gifts,
   open,
@@ -112,33 +109,24 @@ function EnvelopeGift({ gifts }: { gifts: GiftAccountItem[] }) {
   const [open, setOpen] = useState(false);
 
   return (
-    // Same `ivory-deep` panel tone every other muted section on the site
-    // uses, tinted with the theme's own accent via a `multiply` blend —
-    // multiply can only ever darken (result per channel ≤ both inputs), so
-    // this reliably deepens every theme without the muddy grey a flat
-    // black mix gave pale/light themes (their ivory-deep is a pale tint,
-    // and blending straight toward black desaturated it instead of
-    // enriching it). The ink/ink-soft/accent tokens below were already
-    // designed to pair with ivory-deep — darkening it only increases
-    // contrast, never breaks it, across both normal and "flipped" dark
-    // themes.
+    // `ivory-deep` tinted darker with the theme's accent via a multiply
+    // overlay (multiply only ever darkens, so it stays rich instead of the
+    // muddy grey a flat black mix gives pale themes). A solid overlay +
+    // `mix-blend-mode` rather than `background-blend-mode` on a gradient —
+    // the gradient version broke on iOS Safari, which fails to resolve
+    // `var()` inside `linear-gradient()` stops.
     <div
-      className="border-y border-line"
-      style={{
-        backgroundColor: "var(--color-ivory-deep)",
-        backgroundImage: "linear-gradient(var(--color-accent), var(--color-accent))",
-        backgroundBlendMode: "multiply",
-      }}
+      className="relative overflow-hidden border-y border-line"
+      style={{ backgroundColor: "var(--color-ivory-deep)" }}
     >
-      <Section className="text-center">
-        {/* Text here is a fixed warm cream/gold, not the page's ink/accent
-            tokens — this panel's background is deliberately darkened below
-            what those tokens are calibrated for (they're paired with plain
-            ivory-deep), and "ink" flips between dark and light text
-            depending on the theme, so it can land as plain black on a
-            still-fairly-light multiplied background. A fixed light palette
-            keeps this card reading like a consistent envelope/gift card in
-            every theme instead of sometimes mismatching. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{ backgroundColor: "var(--color-accent)", mixBlendMode: "multiply" }}
+      />
+      <Section className="relative text-center">
+        {/* Fixed cream/gold text, not ink/accent — this background is
+            darkened past what those tokens are calibrated for. */}
         <p className="mb-3 font-script text-3xl leading-none text-gold md:text-4xl">Mừng cưới</p>
         <Divider />
         <p className="mx-auto max-w-md font-serif text-lg text-[#f6ead0]">
@@ -149,20 +137,19 @@ function EnvelopeGift({ gifts }: { gifts: GiftAccountItem[] }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="group relative mx-auto mt-10 flex h-56 w-full max-w-xs items-end justify-center"
+          className="group relative mx-auto mt-10 flex h-64 w-full max-w-sm items-end justify-center"
           aria-haspopup="dialog"
         >
-          {/* Two envelopes pivoting from the same bottom point, rotated
-              outward in opposite directions — tips meet at the bottom,
-              tops flare apart, reading as a "V". */}
+          {/* Pivot both envelopes from the same bottom point, rotated
+              outward, so they read as a "V". */}
           <span className="pointer-events-none absolute right-[22%] top-0 text-2xl text-gold transition-transform duration-500 group-hover:rotate-12">
             ✦
           </span>
-          <div className="absolute h-48 w-32 origin-bottom -translate-x-4 -rotate-[16deg] opacity-95 transition-transform duration-500 group-hover:-rotate-[22deg]">
-            <Image src="/thiep.webp" alt="" fill sizes="140px" className="object-contain drop-shadow-xl" />
+          <div className="absolute h-56 w-36 origin-bottom -translate-x-4 -rotate-[16deg] opacity-95 transition-transform duration-500 group-hover:-rotate-[22deg]">
+            <Image src="/thiep.webp" alt="" fill sizes="160px" className="object-contain drop-shadow-xl" />
           </div>
-          <div className="absolute z-10 h-56 w-36 origin-bottom translate-x-4 rotate-[16deg] transition-transform duration-500 group-hover:rotate-[22deg]">
-            <Image src="/thiep.webp" alt="" fill sizes="160px" className="object-contain drop-shadow-2xl" />
+          <div className="absolute z-10 h-64 w-40 origin-bottom translate-x-4 rotate-[16deg] transition-transform duration-500 group-hover:rotate-[22deg]">
+            <Image src="/thiep.webp" alt="" fill sizes="180px" className="object-contain drop-shadow-2xl" />
           </div>
         </button>
 
