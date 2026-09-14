@@ -64,7 +64,16 @@ export function SectionTransition({
             trigger: el,
             start: "top 92%",
             end: "top 45%",
-            scrub: 0.5,
+            // A light scrub (not the old 0.5) so this tracks a fast fling
+            // closely instead of visibly lagging behind it — with several
+            // of these running across the page at once, that lag stacked
+            // up and left sections looking permanently hazy while
+            // scrolling fast, not just briefly settling into focus.
+            // fastScrollEnd snaps straight to the finished state if the
+            // scroll blows past the trigger's range in one jump, instead
+            // of still trying to animate through it after the fact.
+            scrub: 0.15,
+            fastScrollEnd: true,
             scroller,
           },
         }
@@ -83,7 +92,8 @@ export function SectionTransition({
               trigger: el,
               start: "bottom 45%",
               end: "bottom 0%",
-              scrub: 0.5,
+              scrub: 0.15,
+              fastScrollEnd: true,
               scroller,
             },
           }
