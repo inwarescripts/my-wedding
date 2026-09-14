@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 /**
  * Defers mounting `children` until the wrapper scrolls near the viewport,
@@ -47,6 +48,21 @@ export function LazyMount({
     observer.observe(el);
     return () => observer.disconnect();
   }, [visible, rootMargin]);
+
+  // Mounting real content in place of the placeholder changes the
+  // document's total height, which staled GSAP's cached trigger positions
+  // (useParallax, SectionTransition's fadeBlur) for sections further down
+  // — they'd been measured against a page that was still short a bunch of
+  // not-yet-mounted placeholders. That's what left sections from partway
+  // down the page onward reading as permanently hazy/out of focus:
+  // their scroll-linked opacity/blur was scrubbing against stale
+  // start/end points. Refreshing after paint keeps every trigger's
+  // measurements matched to the page's real, current layout.
+  useEffect(() => {
+    if (!visible) return;
+    const id = requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => cancelAnimationFrame(id);
+  }, [visible]);
 
   return (
     <div ref={ref} style={visible ? undefined : { minHeight }}>
