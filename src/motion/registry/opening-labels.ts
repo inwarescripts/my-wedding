@@ -12,7 +12,8 @@ export type OpeningVariant =
   | "doubleHappiness"
   | "redDoor"
   | "curtain"
-  | "envelope";
+  | "envelope"
+  | "bomb";
 
 export const openingRegistry: Record<OpeningVariant, { label: string }> = {
   particleBloom: { label: "Dải hạt sáng 3D" },
@@ -24,4 +25,5 @@ export const openingRegistry: Record<OpeningVariant, { label: string }> = {
   redDoor: { label: "Cửa cưới đóng mở" },
   curtain: { label: "Rèm nhung khép mở" },
   envelope: { label: "Mở thiệp thư" },
+  bomb: { label: "Bom nổ chậm" },
 };

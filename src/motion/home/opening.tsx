@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -444,6 +444,246 @@ function formatDate(iso: string) {
   ).padStart(2, "0")} . ${d.getFullYear()}`;
 }
 
+// How long the fuse burns before detonating — long enough to read as a
+// real countdown (3-2-1), short enough not to feel like a stall before the
+// site actually opens.
+const BOMB_FUSE_MS = 3000;
+
+/** Short crackling bursts of filtered noise for the length of the fuse —
+ * synthesised (no audio asset needed) via Web Audio: a small band-passed
+ * noise burst fired at randomised short intervals reads as a sizzling
+ * fuse. Created from inside the click handler, so the required user
+ * gesture for AudioContext is already satisfied. */
+function playFuseCrackle(ctx: AudioContext, durationMs: number) {
+  const endAt = ctx.currentTime + durationMs / 1000;
+
+  function burst() {
+    if (ctx.currentTime >= endAt) return;
+    const size = Math.floor(ctx.sampleRate * 0.03);
+    const buffer = ctx.createBuffer(1, size, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < size; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const bandpass = ctx.createBiquadFilter();
+    bandpass.type = "bandpass";
+    bandpass.frequency.value = 3000 + Math.random() * 2000;
+    bandpass.Q.value = 1.4;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+    noise.connect(bandpass).connect(gain).connect(ctx.destination);
+    noise.start();
+    noise.stop(ctx.currentTime + 0.05);
+
+    window.setTimeout(burst, 60 + Math.random() * 90);
+  }
+
+  burst();
+}
+
+/** A synthesised "boom" — a sub-bass sine sweeping down fused with a
+ * low-passed noise blast, both with a fast decay. Same reasoning as
+ * playFuseCrackle: no audio asset available, so it's built from oscillator
+ * + noise primitives instead. */
+function playBoom(ctx: AudioContext) {
+  const now = ctx.currentTime;
+
+  const osc = ctx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(150, now);
+  osc.frequency.exponentialRampToValueAtTime(35, now + 0.5);
+  const oscGain = ctx.createGain();
+  oscGain.gain.setValueAtTime(0.9, now);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+  osc.connect(oscGain).connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.6);
+
+  const size = Math.floor(ctx.sampleRate * 0.6);
+  const buffer = ctx.createBuffer(1, size, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const lowpass = ctx.createBiquadFilter();
+  lowpass.type = "lowpass";
+  lowpass.frequency.setValueAtTime(4000, now);
+  lowpass.frequency.exponentialRampToValueAtTime(200, now + 0.6);
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0.8, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+  noise.connect(lowpass).connect(noiseGain).connect(ctx.destination);
+  noise.start(now);
+  noise.stop(now + 0.6);
+}
+
+type BombStage = "idle" | "lit" | "boom";
+
+// Angle + glyph for each spark particle flying outward on detonation.
+const BOOM_PARTICLES = [
+  { deg: 0, glyph: "✨" },
+  { deg: 30, glyph: "🔥" },
+  { deg: 60, glyph: "⭐" },
+  { deg: 90, glyph: "✨" },
+  { deg: 120, glyph: "🔥" },
+  { deg: 150, glyph: "⭐" },
+  { deg: 180, glyph: "✨" },
+  { deg: 210, glyph: "🔥" },
+  { deg: 240, glyph: "⭐" },
+  { deg: 270, glyph: "✨" },
+  { deg: 300, glyph: "🔥" },
+  { deg: 330, glyph: "⭐" },
+];
+
+/** Replaces the plain "Chạm để mở câu chuyện" pill for the `bomb` variant —
+ * tap the bomb, it lights, a 3-2-1 count burns down with a crackling fuse
+ * sound, then it detonates (flash + boom) and only then calls `onDetonate`
+ * (the site's usual enter transition). Real emoji glyphs, not hand-drawn
+ * shapes — same reasoning as the ambient particle effects elsewhere in the
+ * site: guaranteed-correct shape, smooth font rendering. */
+function BombIgniter({
+  stage,
+  count,
+  onIgnite,
+}: {
+  stage: BombStage;
+  count: number;
+  onIgnite: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onIgnite}
+      disabled={stage !== "idle"}
+      aria-label="Châm ngòi bom để mở thiệp"
+      className="group relative mt-10 flex flex-col items-center gap-3 disabled:cursor-default"
+    >
+      <div className="flex flex-col items-center">
+        <div className="relative flex h-40 w-40 items-center justify-center">
+          {/* No hand-drawn cord — 💣 already renders with its own curled
+              fuse on most platforms, so lighting it is just a spark
+              travelling down toward the body over that fuse, not a
+              separate fuse graphic layered on top. */}
+          {stage === "lit" && (
+            <span
+              className="bomb-spark absolute top-2 text-2xl"
+              style={{ animationDuration: `${BOMB_FUSE_MS}ms` }}
+              aria-hidden
+            >
+              🔥
+            </span>
+          )}
+          <span
+            className={
+              stage === "idle"
+                ? "bomb-idle-pulse inline-block text-8xl"
+                : stage === "lit"
+                  ? "bomb-shake inline-block text-8xl"
+                  : "inline-block scale-0 text-8xl opacity-0 transition-all duration-200"
+            }
+            aria-hidden
+          >
+            💣
+          </span>
+          {stage === "boom" && (
+            <>
+              <span className="bomb-boom-glow pointer-events-none absolute inset-0 rounded-full" aria-hidden />
+              <span
+                className="bomb-boom-ring pointer-events-none absolute inset-0 rounded-full border-4 border-[#ffb347]"
+                aria-hidden
+              />
+              {BOOM_PARTICLES.map(({ deg, glyph }) => {
+                const rad = (deg * Math.PI) / 180;
+                const px = Math.round(Math.cos(rad) * 110);
+                const py = Math.round(Math.sin(rad) * 110);
+                return (
+                  <span
+                    key={deg}
+                    className="bomb-boom-particle pointer-events-none absolute left-1/2 top-1/2 text-2xl"
+                    style={{ "--px": `${px}px`, "--py": `${py}px` } as CSSProperties}
+                    aria-hidden
+                  >
+                    {glyph}
+                  </span>
+                );
+              })}
+              <span
+                className="bomb-boom-flash pointer-events-none absolute inset-0 flex items-center justify-center text-9xl"
+                aria-hidden
+              >
+                💥
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <span className="font-heading text-3xl tabular-nums text-ivory" aria-hidden>
+        {stage === "lit" ? count : " "}
+      </span>
+
+      <span className="inline-flex items-center gap-2 rounded-full border border-ivory/40 px-6 py-3 text-xs tracking-[0.25em] uppercase text-ivory/85">
+        {stage === "idle" ? "Chạm để châm ngòi" : stage === "lit" ? "Đang cháy..." : "Bùm!"}
+      </span>
+
+      <style>{`
+        @keyframes bomb-idle-pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
+        }
+        .bomb-idle-pulse { animation: bomb-idle-pulse 1.6s ease-in-out infinite; }
+        @keyframes bomb-shake {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          20% { transform: translate(-2px, 1px) rotate(-2deg); }
+          40% { transform: translate(2px, -1px) rotate(2deg); }
+          60% { transform: translate(-1px, 2px) rotate(-1deg); }
+          80% { transform: translate(1px, -2px) rotate(1deg); }
+        }
+        .bomb-shake { animation: bomb-shake 0.35s ease-in-out infinite; }
+        @keyframes bomb-spark-climb {
+          0% { transform: translate(-2px, 0) scale(0.9); opacity: 1; }
+          100% { transform: translate(2px, 34px) scale(1.3); opacity: 1; }
+        }
+        .bomb-spark { animation: bomb-spark-climb linear forwards; }
+        @keyframes bomb-boom-flash {
+          0% { transform: scale(0.3); opacity: 0; }
+          35% { transform: scale(2.2); opacity: 1; }
+          100% { transform: scale(3.8); opacity: 0; }
+        }
+        .bomb-boom-flash { animation: bomb-boom-flash 0.8s ease-out forwards; }
+        @keyframes bomb-boom-glow {
+          0% {
+            transform: scale(0.4);
+            opacity: 0.95;
+            background: radial-gradient(circle, rgba(255,215,110,1) 0%, rgba(255,120,40,0.6) 45%, transparent 72%);
+          }
+          100% { transform: scale(4.4); opacity: 0; }
+        }
+        .bomb-boom-glow { animation: bomb-boom-glow 0.8s ease-out forwards; }
+        @keyframes bomb-boom-ring {
+          0% { transform: scale(0.5); opacity: 0.9; border-width: 4px; }
+          100% { transform: scale(3); opacity: 0; border-width: 1px; }
+        }
+        .bomb-boom-ring { animation: bomb-boom-ring 0.8s ease-out forwards; }
+        @keyframes bomb-boom-particle {
+          0% { transform: translate(-50%, -50%) translate(0, 0) scale(0.8); opacity: 1; }
+          100% { transform: translate(-50%, -50%) translate(var(--px), var(--py)) scale(0.3); opacity: 0; }
+        }
+        .bomb-boom-particle { animation: bomb-boom-particle 0.75s ease-out forwards; }
+        @media (prefers-reduced-motion: reduce) {
+          .bomb-idle-pulse, .bomb-shake, .bomb-spark,
+          .bomb-boom-flash, .bomb-boom-glow, .bomb-boom-ring, .bomb-boom-particle {
+            animation: none;
+          }
+        }
+      `}</style>
+    </button>
+  );
+}
+
 export function Opening({
   couple,
   variant = "particleBloom",
@@ -457,6 +697,9 @@ export function Opening({
   // from `false` so we never render the static-photo fallback for a single
   // frame before flipping over to the 3D scene once detection resolves.
   const [use3d, setUse3d] = useState<boolean | null>(null);
+  const [bombStage, setBombStage] = useState<BombStage>("idle");
+  const [bombCount, setBombCount] = useState(3);
+  const bombAudioCtxRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     // These 3 scenes are all cheap (a few hundred points / one plane / two
@@ -501,6 +744,39 @@ export function Opening({
     getLenisInstance()?.scrollTo(0, { immediate: true });
     onEnter();
     window.setTimeout(() => setHidden(true), 1700);
+  }
+
+  // Lights the fuse: crackling sound + 3-2-1 burn-down, then detonates
+  // (flash + boom) and only at that point calls handleEnter — the site's
+  // usual enter transition — instead of entering immediately on tap.
+  function igniteBomb() {
+    if (bombStage !== "idle") return;
+    setBombStage("lit");
+
+    let ctx = bombAudioCtxRef.current;
+    if (!ctx) {
+      try {
+        ctx = new AudioContext();
+        bombAudioCtxRef.current = ctx;
+      } catch {
+        ctx = null;
+      }
+    }
+    if (ctx) playFuseCrackle(ctx, BOMB_FUSE_MS);
+
+    let remaining = 3;
+    setBombCount(remaining);
+    const tick = window.setInterval(() => {
+      remaining -= 1;
+      setBombCount(Math.max(remaining, 0));
+      if (remaining <= 0) window.clearInterval(tick);
+    }, BOMB_FUSE_MS / 3);
+
+    window.setTimeout(() => {
+      setBombStage("boom");
+      if (ctx) playBoom(ctx);
+      handleEnter();
+    }, BOMB_FUSE_MS);
   }
 
   if (hidden) return null;
@@ -593,10 +869,8 @@ export function Opening({
           </>
         )}
 
-        <motion.button
-          type="button"
-          onClick={handleEnter}
-          className="relative z-10 flex flex-col items-center gap-6 px-8 text-center text-ivory cursor-pointer"
+        <motion.div
+          className="relative z-10 flex flex-col items-center gap-6 px-8 text-center text-ivory"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -621,14 +895,42 @@ export function Opening({
 
           {showCountdown && <GateCountdown weddingDate={couple.weddingDate} />}
 
-          <span className="mt-10 inline-flex items-center gap-2 rounded-full border border-ivory/40 px-6 py-3 text-xs tracking-[0.25em] uppercase">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ivory/60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-ivory" />
-            </span>
-            Chạm để mở câu chuyện
-          </span>
-        </motion.button>
+          {variant === "bomb" ? (
+            <BombIgniter stage={bombStage} count={bombCount} onIgnite={igniteBomb} />
+          ) : (
+            <button
+              type="button"
+              onClick={handleEnter}
+              className="mt-10 inline-flex cursor-pointer items-center gap-2 rounded-full border border-ivory/40 px-6 py-3 text-xs tracking-[0.25em] uppercase"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ivory/60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-ivory" />
+              </span>
+              Chạm để mở câu chuyện
+            </button>
+          )}
+        </motion.div>
+
+        {/* Full-screen detonation flash — on top of everything else in the
+            gate, briefly whiting out the scene right as handleEnter's own
+            1.5s opacity fade begins, so the "nổ" reads as a real explosion
+            rather than just the small emoji icon flashing. */}
+        {variant === "bomb" && bombStage === "boom" && (
+          <>
+            <div className="bomb-screen-flash pointer-events-none absolute inset-0 z-20 bg-white" aria-hidden />
+            <style>{`
+              @keyframes bomb-screen-flash {
+                0% { opacity: 0.9; }
+                100% { opacity: 0; }
+              }
+              .bomb-screen-flash { animation: bomb-screen-flash 0.5s ease-out forwards; }
+              @media (prefers-reduced-motion: reduce) {
+                .bomb-screen-flash { animation: none; opacity: 0; }
+              }
+            `}</style>
+          </>
+        )}
       </motion.div>
     </AnimatePresence>
   );
