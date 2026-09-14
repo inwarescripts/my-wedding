@@ -31,6 +31,9 @@ import { heroLayoutRegistry } from "@/motion/registry/heroLayout";
 import { gallery3dRegistry } from "@/motion/registry/gallery3d";
 import { giftRegistry } from "@/motion/registry/gift";
 import { rsvpRegistry } from "@/motion/registry/rsvp";
+import { storyRegistry } from "@/motion/registry/story";
+import { eventsRegistry } from "@/motion/registry/events";
+import { scheduleRegistry } from "@/motion/registry/schedule";
 import { timelineRegistry } from "@/motion/registry/timeline";
 import { countdownRegistry } from "@/motion/registry/countdown";
 import { typographyRegistry } from "@/motion/registry/typography";
@@ -629,11 +632,21 @@ export function ProjectEditor({
     switch (frame.type) {
       case "story":
         return (
-          <StorySection
-            projectId={config.projectId}
-            content={frame.content as StoryContent}
-            onChange={(c) => updateFrameContent(frame.id, c)}
-          />
+          <>
+            <StorySection
+              projectId={config.projectId}
+              content={frame.content as StoryContent}
+              onChange={(c) => updateFrameContent(frame.id, c)}
+            />
+            <div className="pt-2">
+              <p className={labelClass}>Ảnh trang trí</p>
+              <VariantPicker
+                registry={storyRegistry}
+                value={frame.variant ?? "floral"}
+                onChange={(v) => selectVariant(frame.id, v)}
+              />
+            </div>
+          </>
         );
       case "photoStack":
         return (
@@ -706,13 +719,35 @@ export function ProjectEditor({
           </>
         );
       case "events":
-        return <EventsSection events={config.events} onChange={setEvents} />;
+        return (
+          <>
+            <EventsSection events={config.events} onChange={setEvents} />
+            <div className="pt-2">
+              <p className={labelClass}>Trang trí</p>
+              <VariantPicker
+                registry={eventsRegistry}
+                value={frame.variant ?? "floral"}
+                onChange={(v) => selectVariant(frame.id, v)}
+              />
+            </div>
+          </>
+        );
       case "schedule":
         return (
-          <ScheduleSection
-            content={frame.content as ScheduleContent}
-            onChange={(c) => updateFrameContent(frame.id, c)}
-          />
+          <>
+            <ScheduleSection
+              content={frame.content as ScheduleContent}
+              onChange={(c) => updateFrameContent(frame.id, c)}
+            />
+            <div className="pt-2">
+              <p className={labelClass}>Kiểu hiển thị</p>
+              <VariantPicker
+                registry={scheduleRegistry}
+                value={frame.variant ?? "timeline"}
+                onChange={(v) => selectVariant(frame.id, v)}
+              />
+            </div>
+          </>
         );
       case "countdown":
         return (

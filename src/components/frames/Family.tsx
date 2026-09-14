@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { CoupleInfo, EventItem, FamilyContent, FamilySide } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";
@@ -129,6 +130,44 @@ function InvitationFamily(props: { content: FamilyContent; couple: CoupleInfo; e
       <div className="relative overflow-hidden border border-accent-soft/70 bg-ivory px-6 py-14 text-center sm:px-12">
         <FloralOrnament className="pointer-events-none absolute -left-2 -top-2 h-24 w-24 text-gold/60" />
         <FloralOrnament className="pointer-events-none absolute -right-2 -top-2 h-24 w-24 text-gold/60 [transform:scaleX(-1)]" />
+        <AnnouncementBody {...props} />
+      </div>
+    </Reveal>
+  );
+}
+
+/** Real flower photos (not line-art) framing opposite corners — same pair
+ * used on the Story section's photo, reused here for a richer, more
+ * photographic floral look than the other cards' flat SVG ornaments. */
+function FloralPhotoFamily(props: { content: FamilyContent; couple: CoupleInfo; event?: EventItem }) {
+  return (
+    <Reveal preset="fadeUp" className="relative mx-auto mt-16 max-w-lg">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-10 -top-10 z-10 h-32 w-32 sm:-right-14 sm:-top-12 sm:h-44 sm:w-44"
+      >
+        <Image
+          src="/flower1-decoration.webp"
+          alt=""
+          fill
+          sizes="180px"
+          className="object-contain drop-shadow-[0_8px_16px_rgba(43,38,33,0.18)]"
+        />
+      </div>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-10 -left-10 z-10 h-36 w-36 sm:-bottom-12 sm:-left-14 sm:h-48 sm:w-48"
+      >
+        <Image
+          src="/flower3-decoration.webp"
+          alt=""
+          fill
+          sizes="200px"
+          className="object-contain drop-shadow-[0_8px_16px_rgba(43,38,33,0.18)]"
+        />
+      </div>
+
+      <div className="relative overflow-hidden border border-accent-soft/70 bg-ivory px-6 py-14 text-center sm:px-12">
         <AnnouncementBody {...props} />
       </div>
     </Reveal>
@@ -528,6 +567,8 @@ export function Family({
           <OpenedFamily content={content} couple={couple} event={event} />
         ) : variant === "traditional" ? (
           <TraditionalFamily content={content} couple={couple} event={event} />
+        ) : variant === "floralPhoto" ? (
+          <FloralPhotoFamily content={content} couple={couple} event={event} />
         ) : (
           // "simple" (the old flat 2-card layout) was removed for looking
           // plain/unfinished next to the other variants — old projects

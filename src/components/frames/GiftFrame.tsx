@@ -128,7 +128,7 @@ function EnvelopeGift({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group relative mx-auto mt-10 flex h-72 w-full max-w-md items-end justify-center"
+        className="group relative mx-auto mt-10 flex h-80 w-full max-w-lg items-end justify-center"
         aria-haspopup="dialog"
       >
         {/* Pivot both envelopes from the same bottom point, rotated
@@ -136,14 +136,14 @@ function EnvelopeGift({
         <span className="pointer-events-none absolute right-[22%] top-0 text-2xl text-gold transition-transform duration-500 group-hover:rotate-12">
           ✦
         </span>
-        <div className="absolute h-64 w-40 origin-bottom -translate-x-4 -rotate-[16deg] opacity-95 transition-transform duration-500 group-hover:-rotate-[22deg]">
+        <div className="absolute h-72 w-44 origin-bottom -translate-x-4 -rotate-[16deg] opacity-95 transition-transform duration-500 group-hover:-rotate-[22deg]">
           <div className="wedding-envelope-bounce h-full w-full" style={{ animationDelay: "0s" }}>
-            <Image src={envelopeImage} alt="" fill sizes="180px" className="object-contain drop-shadow-xl" />
+            <Image src={envelopeImage} alt="" fill sizes="200px" className="object-contain drop-shadow-xl" />
           </div>
         </div>
-        <div className="absolute z-10 h-72 w-44 origin-bottom translate-x-4 rotate-[16deg] transition-transform duration-500 group-hover:rotate-[22deg]">
+        <div className="absolute z-10 h-80 w-48 origin-bottom translate-x-4 rotate-[16deg] transition-transform duration-500 group-hover:rotate-[22deg]">
           <div className="wedding-envelope-bounce h-full w-full" style={{ animationDelay: "0.25s" }}>
-            <Image src={envelopeImage} alt="" fill sizes="200px" className="object-contain drop-shadow-2xl" />
+            <Image src={envelopeImage} alt="" fill sizes="220px" className="object-contain drop-shadow-2xl" />
           </div>
         </div>
       </button>
@@ -206,7 +206,7 @@ export function GiftFrame({
   bowStyle?: string;
   variant?: string;
 }) {
-  if (variant === "envelope" || variant === "envelopeRed") {
+  if (variant === "envelope" || variant === "envelopeRed" || variant === "envelopeGreen") {
     return <EnvelopeGift gifts={gifts} envelopeImage={ENVELOPE_IMAGE[variant]} />;
   }
   return <DefaultGift gifts={gifts} bowStyle={bowStyle} />;

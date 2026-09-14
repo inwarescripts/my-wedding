@@ -9,13 +9,19 @@ import { Section, Eyebrow, Divider } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";
 import { hasWebGL } from "@/lib/hasWebGL";
 
-export type Gallery3dVariant = "floatingPhotos" | "cssStack" | "coverflow" | "cinematicReel";
+export type Gallery3dVariant =
+  | "floatingPhotos"
+  | "cssStack"
+  | "coverflow"
+  | "cinematicReel"
+  | "elegantSlide";
 
 export const gallery3dRegistry: Record<Gallery3dVariant, { label: string }> = {
   floatingPhotos: { label: "Ảnh nổi 3D (WebGL)" },
   cssStack: { label: "Chồng ảnh nghiêng" },
   coverflow: { label: "Coverflow xoay 3D" },
   cinematicReel: { label: "Phim chậm dần nhanh" },
+  elegantSlide: { label: "Trượt ảnh thẻ lớn (có nút điều hướng)" },
 };
 
 const FloatingPhotos = dynamic(
@@ -69,6 +75,133 @@ function Coverflow({ images }: { images: string[] }) {
           );
         })}
       </div>
+      <div className="mt-6 flex gap-2">
+        {images.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setActive(i)}
+            aria-label={`Ảnh ${i + 1}`}
+            className={`h-1.5 rounded-full transition-all ${
+              i === active ? "w-6 bg-gold" : "w-1.5 bg-line"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChevronIcon({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={direction === "left" ? "-translate-x-px" : "translate-x-px"}
+    >
+      <path
+        d={direction === "left" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/** A large rounded center card with soft, faded "ghost" neighbours peeking
+ * out on either side, plus explicit prev/next arrow buttons — the
+ * "minimalism" reference look, distinct from Coverflow's 3D rotateY tilt
+ * (these side cards stay flat, just scaled down and dimmed). */
+const ELEGANT_SLIDE_AUTOPLAY_MS = 3500;
+
+function ElegantSlide({ images }: { images: string[] }) {
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const count = images.length;
+
+  function go(delta: number) {
+    setActive((prev) => (prev + delta + count) % count);
+  }
+
+  useEffect(() => {
+    if (count < 2 || paused) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const timer = setInterval(() => {
+      setActive((prev) => (prev + 1) % count);
+    }, ELEGANT_SLIDE_AUTOPLAY_MS);
+    return () => clearInterval(timer);
+  }, [count, paused]);
+
+  return (
+    <div
+      className="relative flex h-full flex-col items-center justify-center"
+      // Pausing on hover/focus (not just while a nav button is pressed)
+      // means a guest reading a caption or about to click prev/next never
+      // has the slide advance out from under them mid-interaction.
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
+      <div className="relative flex h-[82%] w-full items-center justify-center [perspective:1400px]">
+        {images.map((src, i) => {
+          // Wrapped (circular) offset, not a plain linear `i - active` — so
+          // the last image's right-hand neighbour is the first image and
+          // vice versa, reading as one continuous loop instead of running
+          // out of neighbours at either end.
+          let offset = (i - active) % count;
+          if (offset > count / 2) offset -= count;
+          if (offset < -count / 2) offset += count;
+          const abs = Math.abs(offset);
+          if (abs > 2) return null;
+          const isActive = offset === 0;
+          return (
+            <div
+              key={src}
+              className="absolute h-[88%] w-[48%] overflow-hidden rounded-2xl border-4 border-ivory shadow-flat transition-all duration-500"
+              style={{
+                // Active card stays flat; neighbours lean away from it a
+                // little (rotateY), same "peeking sideways" read as
+                // Coverflow but much subtler — this variant's cards stay
+                // mostly flat-on, just tilted rather than fully turned.
+                transform: `translateX(${offset * 58}%) rotateY(${isActive ? 0 : offset * -10}deg) scale(${isActive ? 1 : 0.8})`,
+                zIndex: 10 - abs,
+                opacity: isActive ? 1 : 0.55,
+                filter: isActive ? "none" : "blur(1px)",
+              }}
+            >
+              <Image src={src} alt="" fill sizes="45vw" quality={90} className="object-cover" />
+            </div>
+          );
+        })}
+      </div>
+
+      {count > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => go(-1)}
+            aria-label="Ảnh trước"
+            className="absolute left-1 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-ivory/90 text-ink shadow-flat transition-transform hover:scale-110 md:left-4"
+          >
+            <ChevronIcon direction="left" />
+          </button>
+          <button
+            type="button"
+            onClick={() => go(1)}
+            aria-label="Ảnh sau"
+            className="absolute right-1 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-ivory/90 text-ink shadow-flat transition-transform hover:scale-110 md:right-4"
+          >
+            <ChevronIcon direction="right" />
+          </button>
+        </>
+      )}
+
       <div className="mt-6 flex gap-2">
         {images.map((_, i) => (
           <button
@@ -193,9 +326,13 @@ export function Gallery3dVariant({
         {variant !== "cinematicReel" && !use3d && variant === "coverflow" && (
           <Coverflow images={content.images} />
         )}
-        {variant !== "cinematicReel" && !use3d && variant !== "coverflow" && (
-          <CssStack images={content.images} />
+        {variant !== "cinematicReel" && !use3d && variant === "elegantSlide" && (
+          <ElegantSlide images={content.images} />
         )}
+        {variant !== "cinematicReel" &&
+          !use3d &&
+          variant !== "coverflow" &&
+          variant !== "elegantSlide" && <CssStack images={content.images} />}
       </Reveal>
     </Section>
   );

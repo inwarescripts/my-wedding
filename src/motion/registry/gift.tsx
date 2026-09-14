@@ -1,14 +1,16 @@
-export type GiftVariant = "default" | "envelope" | "envelopeRed";
+export type GiftVariant = "default" | "envelope" | "envelopeRed" | "envelopeGreen";
 
 export const giftRegistry: Record<GiftVariant, { label: string }> = {
   default: { label: "Danh sách tài khoản" },
   // "envelope" (not "envelopeYellow") for backward compatibility — existing
-  // projects already saved with this value before the red option existed.
+  // projects already saved with this value before the red/green options existed.
   envelope: { label: "Phong bao vàng (nhấn để mở)" },
   envelopeRed: { label: "Phong bao đỏ (nhấn để mở)" },
+  envelopeGreen: { label: "Phong bao xanh (nhấn để mở)" },
 };
 
-export const ENVELOPE_IMAGE: Record<"envelope" | "envelopeRed", string> = {
+export const ENVELOPE_IMAGE: Record<"envelope" | "envelopeRed" | "envelopeGreen", string> = {
   envelope: "/thiep.webp",
   envelopeRed: "/thiep2.webp",
+  envelopeGreen: "/thiep_green.webp",
 };

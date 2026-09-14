@@ -59,6 +59,7 @@ export function renderFrame(frame: FrameConfig, ctx: RenderFrameContext) {
           quote={ctx.couple.quote}
           typographyVariant={ctx.typographyVariant}
           bowStyle={ctx.bowStyle}
+          variant={frame.variant}
         />
       );
     case "photoStack":
@@ -79,9 +80,15 @@ export function renderFrame(frame: FrameConfig, ctx: RenderFrameContext) {
         />
       );
     case "events":
-      return <Events events={ctx.events} />;
+      return <Events events={ctx.events} variant={frame.variant} />;
     case "schedule":
-      return <Schedule content={frame.content as ScheduleContent} bowStyle={ctx.bowStyle} />;
+      return (
+        <Schedule
+          content={frame.content as ScheduleContent}
+          bowStyle={ctx.bowStyle}
+          variant={frame.variant}
+        />
+      );
     case "countdown":
       return (
         <CountdownVariant

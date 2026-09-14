@@ -43,4 +43,7 @@ export const DEFAULT_VARIANT: Partial<Record<FrameType, string>> = {
   countdown: "classic",
   gift: "default",
   rsvp: "form",
+  story: "floral",
+  events: "floral",
+  schedule: "timeline",
 };
