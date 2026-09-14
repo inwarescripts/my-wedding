@@ -89,10 +89,12 @@ export function Events({
 
           {/* A "囍" medallion floating in the gap between the two event
               cards — always shown regardless of the floral decoration
-              option above. Desktop only (md:flex): on the single-column
-              mobile layout the cards stack and there's no gap to sit in. */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 hidden h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-gold/50 bg-ivory shadow-flat md:flex lg:h-20 lg:w-20">
-            <Reveal preset="scaleIn" delay={0.2} className="relative h-10 w-10 lg:h-12 lg:w-12">
+              option above. `top-1/2` still lands in the actual gap on the
+              single-column mobile layout too: with two roughly-equal-height
+              stacked cards, the container's vertical midpoint falls right
+              in the gap between them, not inside either card. */}
+          <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-gold/50 bg-ivory shadow-flat sm:h-16 sm:w-16 lg:h-20 lg:w-20">
+            <Reveal preset="scaleIn" delay={0.2} className="relative h-9 w-9 sm:h-10 sm:w-10 lg:h-12 lg:w-12">
               <Image src="/flower/chu-hy.webp" alt="" fill sizes="80px" className="object-contain" />
             </Reveal>
           </div>

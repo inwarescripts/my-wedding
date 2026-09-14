@@ -3,6 +3,7 @@ import { Section, Eyebrow } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";
 import { ScheduleIcon } from "@/motion/registry/scheduleIcon";
 import { BowOrnament } from "@/motion/registry/bow";
+import { FloralOrnament } from "@/motion/registry/family";
 
 /** A wide horizontal vine-and-blossom flourish — stands in for the shared
  * <Divider/> just here, since this section wanted something more striking
@@ -10,10 +11,14 @@ import { BowOrnament } from "@/motion/registry/bow";
  * line-art (`currentColor` stroke), same visual language as FloralOrnament/
  * BowOrnament; the blossom centre punches through to the page background
  * instead of being solid, so it doesn't look like a plain filled dot. */
-function ScheduleFloralDivider() {
+function ScheduleFloralDivider({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="my-6 flex justify-center text-gold" aria-hidden>
-      <svg className="h-5 w-56 sm:h-6 sm:w-72" viewBox="0 0 220 24" fill="none">
+    <div className={`${compact ? "my-4" : "my-6"} flex justify-center text-gold`} aria-hidden>
+      <svg
+        className={compact ? "h-4 w-36 sm:h-5 sm:w-44" : "h-5 w-56 sm:h-6 sm:w-72"}
+        viewBox="0 0 220 24"
+        fill="none"
+      >
         <path
           d="M4 12 C 30 12 46 6 62 12 C 78 18 94 12 100 12"
           stroke="currentColor"
@@ -91,11 +96,18 @@ function CardSchedule({ items }: { items: ScheduleItem[] }) {
     <div
       // Diagonal "cut corners" — top-right and bottom-left rounded large,
       // the opposite two kept small — instead of a plain rounded rectangle.
-      className="relative mx-auto mt-12 max-w-lg rounded-tl-lg rounded-tr-[5rem] rounded-br-lg rounded-bl-[5rem] border-2 border-dashed border-accent-soft/70 px-8 py-10 text-center sm:px-10 sm:py-12"
+      className="relative mx-auto mt-12 max-w-lg overflow-hidden rounded-tl-lg rounded-tr-[5rem] rounded-br-lg rounded-bl-[5rem] border-2 border-dashed border-accent-soft/70 px-8 py-10 text-center sm:px-10 sm:py-12"
     >
-      <p className="mb-8 font-heading text-lg font-bold uppercase tracking-wide text-ink">
+      {/* Small floral flourishes tucked into the two large-radius corners —
+          echoes the corner ornaments other card variants (InvitationFamily)
+          use, so this card doesn't read as bare next to them. */}
+      <FloralOrnament className="pointer-events-none absolute -right-1 -top-1 h-16 w-16 text-gold/50 [transform:scaleX(-1)]" />
+      <FloralOrnament className="pointer-events-none absolute -bottom-1 -left-1 h-16 w-16 rotate-180 text-gold/50" />
+
+      <p className="relative mb-2 font-heading text-lg font-bold uppercase tracking-wide text-ink">
         Lịch trình ngày cưới
       </p>
+      <ScheduleFloralDivider compact />
 
       <div className="relative mx-auto w-fit">
         <div
