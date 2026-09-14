@@ -24,9 +24,18 @@ export const transitionRegistry: Record<TransitionVariant, { label: string }> = 
  */
 export function SectionTransition({
   variant,
+  isLast = false,
   children,
 }: {
   variant: string;
+  /** The last section has no next section to dissolve into, and its own
+   * bottom edge can never actually reach the trigger's "bottom 0%" point —
+   * max scroll only ever brings a document's final bottom edge down to the
+   * viewport's own bottom (page can't scroll past its own end), never up to
+   * the top. The exit tween's scrub progress was capping out partway
+   * through, leaving the last section permanently stuck faded/blurred once
+   * a guest scrolled to the end. Skipping the exit tween there avoids it. */
+  isLast?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -62,26 +71,28 @@ export function SectionTransition({
       );
       // ...and dissolve out as it leaves, so the next section emerges
       // through the same haze rather than cutting sharply.
-      gsap.fromTo(
-        el,
-        { opacity: 1, filter: "blur(0px)" },
-        {
-          opacity: 0.1,
-          filter: "blur(20px)",
-          ease: "none",
-          scrollTrigger: {
-            trigger: el,
-            start: "bottom 45%",
-            end: "bottom 0%",
-            scrub: 0.5,
-            scroller,
-          },
-        }
-      );
+      if (!isLast) {
+        gsap.fromTo(
+          el,
+          { opacity: 1, filter: "blur(0px)" },
+          {
+            opacity: 0.1,
+            filter: "blur(20px)",
+            ease: "none",
+            scrollTrigger: {
+              trigger: el,
+              start: "bottom 45%",
+              end: "bottom 0%",
+              scrub: 0.5,
+              scroller,
+            },
+          }
+        );
+      }
     }, el);
 
     return () => ctx.revert();
-  }, [variant]);
+  }, [variant, isLast]);
 
   if (variant !== "fadeBlur") return <>{children}</>;
 

@@ -136,7 +136,10 @@ export function WeddingRenderer({
         )}
         {orderedFrames.map((frame, i) => {
           const section = (
-            <SectionTransition variant={config.settings.transitionVariant}>
+            <SectionTransition
+              variant={config.settings.transitionVariant}
+              isLast={i === orderedFrames.length - 1}
+            >
               {renderFrame(frame, ctx)}
             </SectionTransition>
           );
