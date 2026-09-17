@@ -223,10 +223,12 @@ function DomeChuHyHero({
         <p className="text-xs tracking-[0.5em] uppercase text-[#f6ead0]/70">
           Welcome to our wedding
         </p>
-        <div className="mx-auto mt-7 flex max-w-md items-center justify-center gap-5 sm:gap-8">
+        <div className="mx-auto mt-7 flex max-w-xl items-center justify-center gap-4 sm:gap-8">
           <div className="flex-1 text-right">
             <p className="text-xs tracking-[0.25em] uppercase text-[#e0b74a]">Chú rể</p>
-            <p className="mt-1 truncate font-heading text-lg sm:text-2xl">{couple.groomName}</p>
+            <p className="mt-1 truncate pt-2 font-script text-4xl leading-[1.3] sm:text-5xl">
+              {couple.groomName}
+            </p>
           </div>
           <Image
             src="/flower/chu-hy.webp"
@@ -238,7 +240,9 @@ function DomeChuHyHero({
           />
           <div className="flex-1 text-left">
             <p className="text-xs tracking-[0.25em] uppercase text-[#e0b74a]">Cô dâu</p>
-            <p className="mt-1 truncate font-heading text-lg sm:text-2xl">{couple.brideName}</p>
+            <p className="mt-1 truncate pt-2 font-script text-4xl leading-[1.3] sm:text-5xl">
+              {couple.brideName}
+            </p>
           </div>
         </div>
         <p className="mt-8 flex items-center justify-center gap-3 font-script text-2xl text-[#f6ead0]/85">
