@@ -1,8 +1,10 @@
-export type HeroLayoutVariant = "full" | "archFrame";
+export type HeroLayoutVariant = "full" | "archFrame" | "domeChuHy" | "ovalWreath";
 
 export const heroLayoutRegistry: Record<HeroLayoutVariant, { label: string }> = {
   full: { label: "Ảnh bìa toàn màn hình" },
   archFrame: { label: "Khung vòm & chim én" },
+  domeChuHy: { label: "Vòm đỏ Song Hỷ & ảnh vòm" },
+  ovalWreath: { label: "Ảnh oval & vòng hoa" },
 };
 
 // public/frame.svg is two nested arches in the SAME 0 0 754 1099 space: a
