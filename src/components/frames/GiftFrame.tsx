@@ -17,11 +17,14 @@ function GiftCard({
   accountName,
   accountNumber,
   compact = false,
-}: GiftAccountItem & { compact?: boolean }) {
+  className = "",
+}: GiftAccountItem & { compact?: boolean; className?: string }) {
   const qrValue = `${bank}|${accountNumber}|${accountName}`;
 
   return (
-    <div className={`card-flat text-center ${compact ? "px-3 py-5 sm:px-6 sm:py-8" : "px-8 py-10"}`}>
+    <div
+      className={`card-flat text-center ${compact ? "px-3 py-5 sm:px-6 sm:py-8" : "px-8 py-10"} ${className}`}
+    >
       <p className={`font-script text-accent ${compact ? "text-xl sm:text-2xl" : "text-3xl"}`}>
         {label}
       </p>
@@ -40,7 +43,10 @@ function GiftCard({
       <p className={`mt-1 font-serif text-ink-soft ${compact ? "text-xs sm:text-sm" : ""}`}>
         {accountName}
       </p>
-      <p className={`font-serif tracking-wider text-ink-soft ${compact ? "text-xs sm:text-sm" : ""}`}>
+      {/* Plain sans, not the decorative font-serif/tracking-wider used
+          elsewhere on this card — a bank account number is meant to be
+          scanned/copied digit-by-digit, not read as prose. */}
+      <p className={`font-sans tabular-nums text-ink-soft ${compact ? "text-xs sm:text-sm" : "text-base"}`}>
         {accountNumber}
       </p>
     </div>
@@ -92,9 +98,13 @@ function GiftModal({
               ✕
             </button>
             <p className="text-center font-heading text-xl text-ink">Mừng cưới</p>
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-6">
+            {/* flex + justify-center, not grid-cols-2 — with an odd number
+                of gift accounts (most often just one), a grid leaves the
+                lone/last card stuck in the first column instead of centred
+                in the row. */}
+            <div className="mt-6 flex flex-wrap justify-center gap-3 sm:gap-6">
               {gifts.map((gift) => (
-                <GiftCard key={gift.id} {...gift} compact />
+                <GiftCard key={gift.id} {...gift} compact className="w-[45%] min-w-[150px]" />
               ))}
             </div>
           </motion.div>
