@@ -73,16 +73,12 @@ export function Guestbook({
         </div>
       </Reveal>
 
-      {/* A long-running guestbook can accumulate far more approved messages
-          than comfortably fit on one screen — scrolling this block (instead
-          of letting the section grow unbounded) keeps the rest of the page
-          reachable. max-h only kicks in once content actually overflows it,
-          so short lists render exactly as before. */}
-      <div className="guestbook-scroll mx-auto mt-14 max-h-[640px] max-w-4xl overflow-y-auto px-1 pb-2 pt-1 sm:px-2">
+      <div className="guestbook-scroll mx-auto mt-14 max-h-[640px] max-w-4xl overflow-y-scroll px-1 pb-2 pt-1 sm:px-2">
         <Stagger className="grid gap-x-6 gap-y-10 text-left sm:grid-cols-2">
           {seed.map((m, i) => (
             <StaggerItem
               key={m.id}
+              preset="fade"
               className={`card-flat relative px-6 pb-6 pt-9 transition-transform duration-300 hover:rotate-0 hover:shadow-md ${TILTS[i % TILTS.length]}`}
             >
               <span
