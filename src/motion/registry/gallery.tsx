@@ -116,7 +116,9 @@ function Lightbox({
   return createPortal(content, document.body);
 }
 
-function MasonryBody({ items, onOpen }: { items: string[]; onOpen: (i: number) => void }) {
+type GalleryBodyProps = { items: string[]; onOpen: (i: number) => void; onPreload: (src: string) => void };
+
+function MasonryBody({ items, onOpen, onPreload }: GalleryBodyProps) {
   return (
     <div className="mt-12 columns-2 gap-4 md:columns-3">
       {items.map((src, i) => (
@@ -129,6 +131,8 @@ function MasonryBody({ items, onOpen }: { items: string[]; onOpen: (i: number) =
           <button
             type="button"
             onClick={() => onOpen(i)}
+            onMouseEnter={() => onPreload(src)}
+            onTouchStart={() => onPreload(src)}
             className="relative block h-full w-full cursor-zoom-in overflow-hidden"
           >
             <Image
@@ -159,7 +163,7 @@ const WAVE_FADE_MS = 1500;
 // reshuffle itself only happens once the *last* tile in the wave has fully
 // faded out (see hideMs below), so nothing jumps position while still
 // partly visible.
-function MasonryFadeBody({ items, onOpen }: { items: string[]; onOpen: (i: number) => void }) {
+function MasonryFadeBody({ items, onOpen, onPreload }: GalleryBodyProps) {
   const order = useShuffledOrderWithWave(items.length, 10000, WAVE_STAGGER_MS, WAVE_FADE_MS);
 
   return (
@@ -180,6 +184,8 @@ function MasonryFadeBody({ items, onOpen }: { items: string[]; onOpen: (i: numbe
           <button
             type="button"
             onClick={() => onOpen(originalIndex)}
+            onMouseEnter={() => onPreload(items[originalIndex])}
+            onTouchStart={() => onPreload(items[originalIndex])}
             className="relative block h-full w-full cursor-zoom-in"
           >
             <Image
@@ -239,7 +245,7 @@ function useShuffledOrderWithWave(
 // settle back down" — scale bumps up and the shadow deepens mid-glide, no
 // rotation at all, so it reads as a physical 2D card sliding rather than a
 // 3D object turning (that's Masonry3dBody's thing).
-function MasonryShiftBody({ items, onOpen }: { items: string[]; onOpen: (i: number) => void }) {
+function MasonryShiftBody({ items, onOpen, onPreload }: GalleryBodyProps) {
   const order = useShuffledOrder(items.length, 9000);
 
   return (
@@ -268,6 +274,8 @@ function MasonryShiftBody({ items, onOpen }: { items: string[]; onOpen: (i: numb
           <button
             type="button"
             onClick={() => onOpen(originalIndex)}
+            onMouseEnter={() => onPreload(items[originalIndex])}
+            onTouchStart={() => onPreload(items[originalIndex])}
             className="relative block h-full w-full cursor-zoom-in"
           >
             <Image
@@ -293,7 +301,7 @@ function MasonryShiftBody({ items, onOpen }: { items: string[]; onOpen: (i: numb
 // flip. rotateY is reserved for that one-shot flip; the always-on idle
 // life between shuffles instead rocks gently on rotateX only, so the two
 // motions never fight over the same axis.
-function Masonry3dBody({ items, onOpen }: { items: string[]; onOpen: (i: number) => void }) {
+function Masonry3dBody({ items, onOpen, onPreload }: GalleryBodyProps) {
   const order = useShuffledOrder(items.length, 10000);
 
   return (
@@ -323,6 +331,8 @@ function Masonry3dBody({ items, onOpen }: { items: string[]; onOpen: (i: number)
           <button
             type="button"
             onClick={() => onOpen(originalIndex)}
+            onMouseEnter={() => onPreload(items[originalIndex])}
+            onTouchStart={() => onPreload(items[originalIndex])}
             className="relative block h-full w-full cursor-zoom-in"
           >
             <Image
@@ -340,7 +350,7 @@ function Masonry3dBody({ items, onOpen }: { items: string[]; onOpen: (i: number)
   );
 }
 
-function GridBody({ items, onOpen }: { items: string[]; onOpen: (i: number) => void }) {
+function GridBody({ items, onOpen, onPreload }: GalleryBodyProps) {
   return (
     <div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
       {items.map((src, i) => (
@@ -348,6 +358,8 @@ function GridBody({ items, onOpen }: { items: string[]; onOpen: (i: number) => v
           <button
             type="button"
             onClick={() => onOpen(i)}
+            onMouseEnter={() => onPreload(src)}
+            onTouchStart={() => onPreload(src)}
             className="relative block h-full w-full cursor-zoom-in overflow-hidden"
           >
             <Image
@@ -365,7 +377,7 @@ function GridBody({ items, onOpen }: { items: string[]; onOpen: (i: number) => v
   );
 }
 
-function CarouselBody({ items, onOpen }: { items: string[]; onOpen: (i: number) => void }) {
+function CarouselBody({ items, onOpen, onPreload }: GalleryBodyProps) {
   return (
     <div className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 no-scrollbar">
       {items.map((src, i) => (
@@ -373,6 +385,8 @@ function CarouselBody({ items, onOpen }: { items: string[]; onOpen: (i: number) 
           key={src + i}
           type="button"
           onClick={() => onOpen(i)}
+          onMouseEnter={() => onPreload(src)}
+          onTouchStart={() => onPreload(src)}
           className="relative aspect-[3/4] w-[70%] flex-shrink-0 snap-center overflow-hidden md:w-[32%]"
         >
           <Image src={src} alt="" fill sizes="70vw" quality={90} className="object-cover" />
@@ -424,6 +438,7 @@ export function GalleryVariant({
   variant?: string;
 }) {
   const [active, setActive] = useState<number | null>(null);
+  const [preloadSrc, setPreloadSrc] = useState<string | null>(null);
   const items = content.items;
 
   return (
@@ -436,14 +451,38 @@ export function GalleryVariant({
         </p>
       </div>
 
-      {variant === "grid" && <GridBody items={items} onOpen={setActive} />}
-      {variant === "carousel" && <CarouselBody items={items} onOpen={setActive} />}
+      {variant === "grid" && <GridBody items={items} onOpen={setActive} onPreload={setPreloadSrc} />}
+      {variant === "carousel" && (
+        <CarouselBody items={items} onOpen={setActive} onPreload={setPreloadSrc} />
+      )}
       {variant === "fullbleedSlider" && <FullbleedSlider items={items} />}
-      {variant === "masonryFade" && <MasonryFadeBody items={items} onOpen={setActive} />}
-      {variant === "masonryShift" && <MasonryShiftBody items={items} onOpen={setActive} />}
-      {variant === "masonry3d" && <Masonry3dBody items={items} onOpen={setActive} />}
+      {variant === "masonryFade" && (
+        <MasonryFadeBody items={items} onOpen={setActive} onPreload={setPreloadSrc} />
+      )}
+      {variant === "masonryShift" && (
+        <MasonryShiftBody items={items} onOpen={setActive} onPreload={setPreloadSrc} />
+      )}
+      {variant === "masonry3d" && (
+        <Masonry3dBody items={items} onOpen={setActive} onPreload={setPreloadSrc} />
+      )}
       {(variant === "masonry" || !(variant in galleryRegistry)) && (
-        <MasonryBody items={items} onOpen={setActive} />
+        <MasonryBody items={items} onOpen={setActive} onPreload={setPreloadSrc} />
+      )}
+
+      {/* The Lightbox requests a much larger derivative (`sizes="90vw"`)
+          than any thumbnail (`~30-45vw`) ever does, so opening it used to
+          always be a cold request — Next's image optimizer had never been
+          asked for that size before, so it resized straight from the
+          original on click, which is what made it feel slow. Warming the
+          exact same src/sizes/quality on hover (desktop) or touchstart
+          (mobile, fires just ahead of the click) means that resize has
+          usually already happened by the time the modal actually opens.
+          1x1 and invisible — `sizes` still tells the browser to fetch the
+          full 90vw-wide asset regardless of this box's own rendered size. */}
+      {preloadSrc && (
+        <div className="pointer-events-none fixed left-0 top-0 -z-10 h-px w-px overflow-hidden opacity-0" aria-hidden>
+          <Image src={preloadSrc} alt="" fill sizes="90vw" quality={90} />
+        </div>
       )}
 
       {variant !== "fullbleedSlider" && (

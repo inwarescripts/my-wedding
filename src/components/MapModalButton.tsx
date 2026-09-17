@@ -40,12 +40,12 @@ export function MapModalButton({
         {label}
       </button>
 
-      <Modal open={open} onClose={() => setOpen(false)} title={title}>
+      <Modal open={open} onClose={() => setOpen(false)} title={title} maxWidth="max-w-2xl">
         <div className="space-y-3">
           {address && (
             <p className="text-center font-serif text-sm text-ink-soft">{address}</p>
           )}
-          <div className="aspect-video w-full overflow-hidden border border-line">
+          <div className="aspect-[4/3] w-full overflow-hidden border border-line sm:h-[480px]">
             {open && (
               <iframe
                 src={`https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`}

@@ -10,10 +10,21 @@ import rdpStyles from "react-day-picker/style.module.css";
 // assigns real ids on create). A counter, not Date.now()/crypto — those are
 // impure calls the React Compiler's purity lint flags when reachable from a
 // component body.
-let tempIdCounter = 0;
+//
+// Kept on `globalThis`, not a plain module-scoped `let` — a module-scoped
+// counter resets to 0 on every Fast Refresh (dev-only hot reload swaps the
+// module's closures, but React keeps the existing component state/props),
+// so adding rows, editing code, then adding more rows could mint an id
+// that collides with one still sitting in the untouched React tree —
+// exactly the "two children with the same key" this was seen with.
+// `globalThis` isn't touched by a module reload, so the counter survives.
+function nextCounterValue(): number {
+  const g = globalThis as { __weddingTempIdCounter?: number };
+  g.__weddingTempIdCounter = (g.__weddingTempIdCounter ?? 0) + 1;
+  return g.__weddingTempIdCounter;
+}
 export function nextTempId(prefix: string) {
-  tempIdCounter += 1;
-  return `new-${prefix}-${tempIdCounter}`;
+  return `new-${prefix}-${nextCounterValue()}`;
 }
 
 export const inputClass =

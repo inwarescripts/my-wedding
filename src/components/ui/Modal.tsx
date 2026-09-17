@@ -12,11 +12,16 @@ export function Modal({
   onClose,
   title,
   children,
+  maxWidth = "max-w-sm",
 }: {
   open: boolean;
   onClose: () => void;
   title: ReactNode;
   children: ReactNode;
+  /** Tailwind max-width class — defaults to the compact form-sized modal
+   * every other call site wants; content that needs more room (a map)
+   * passes something wider instead of this default changing for everyone. */
+  maxWidth?: string;
 }) {
   // Mounted only on the client — createPortal needs document.body, which
   // doesn't exist during SSR.
@@ -62,7 +67,7 @@ export function Modal({
             <motion.div
               role="dialog"
               aria-modal
-              className="w-full max-w-sm border border-line bg-ivory shadow-2xl"
+              className={`w-full ${maxWidth} border border-line bg-ivory shadow-2xl`}
               initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 8 }}
