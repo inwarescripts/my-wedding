@@ -203,12 +203,13 @@ export interface ProjectGalleryItem {
   openingVariant: string | undefined;
 }
 
-/** Cards for the "/" marketing page's template gallery — published
- * projects only, newest first. */
+/** Cards for the "/" marketing page's template gallery — published,
+ * admin-flagged (showOnHomepage) projects only, newest first. */
 export async function getPublishedProjectsGallery(): Promise<ProjectGalleryItem[]> {
   const projects = await prisma.project.findMany({
     where: {
       status: "published",
+      showOnHomepage: true,
       // Same expiry gate as getPublishedWeddingConfigBySlug — an expired
       // project's detail page 404s, so it shouldn't be listed here either.
       OR: [{ expiredAt: null }, { expiredAt: { gt: new Date() } }],

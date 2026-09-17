@@ -942,6 +942,7 @@ export function ProjectEditor({
                     setProjectMeta((p) => ({ ...p, expiredAt: v || null }));
                   }}
                   clearable
+                  showTime={false}
                 />
                 <p className="mt-1 text-xs text-ink-soft">
                   Sau ngày này, chủ dự án (nếu không phải admin) chỉ xem

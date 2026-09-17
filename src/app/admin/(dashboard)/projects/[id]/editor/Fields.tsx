@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { DayPicker } from "react-day-picker";
 import { vi } from "react-day-picker/locale";
 import rdpStyles from "react-day-picker/style.module.css";
@@ -85,6 +86,7 @@ export function DateTimeField({
   onChange,
   className,
   clearable = false,
+  showTime = true,
 }: {
   label: string;
   value: string;
@@ -94,20 +96,58 @@ export function DateTimeField({
    * optional dates like "Hạn sử dụng" (no expiry). "Ngày cưới" always
    * needs a value, so it leaves this off. */
   clearable?: boolean;
+  /** "Hạn sử dụng" is just a cutoff day, no meaningful time-of-day — hides
+   * the time input so it can share one row with the date button and the
+   * clear button instead of needing a second row just for the (unused)
+   * time picker. "Ngày cưới" keeps it: the ceremony's actual start time is
+   * shown on the site (countdown, "được cử hành vào lúc"). */
+  showTime?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // The calendar popover is portalled straight to <body> (see below) — this
+  // field lives inside the editor's scrollable left panel, and a plain
+  // `position: absolute` popover was getting clipped by that ancestor's
+  // `overflow-y-auto` the moment it would extend past the panel's visible
+  // bounds, leaving the day cells rendered-but-unclickable (covered/hidden)
+  // instead of overlaying the rest of the page like a dropdown should.
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null);
   const date = value ? new Date(value) : null;
 
   useEffect(() => {
     if (!open) return;
     function handlePointerDown(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      const insideTrigger = containerRef.current?.contains(target);
+      const insidePopover = popoverRef.current?.contains(target);
+      if (!insideTrigger && !insidePopover) setOpen(false);
     }
     document.addEventListener("mousedown", handlePointerDown);
     return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [open]);
+
+  // Position the portalled popover against the trigger's real screen
+  // position (fixed coordinates, immune to any ancestor's overflow
+  // clipping) — recomputed each time it opens. Closes on scroll/resize
+  // instead of continuously repositioning, same as a typical dropdown.
+  useLayoutEffect(() => {
+    if (!open || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setPopoverPos({ top: rect.bottom + 4, left: rect.left });
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleScrollOrResize() {
+      setOpen(false);
+    }
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
   }, [open]);
 
   function commitDay(day: Date) {
@@ -130,74 +170,121 @@ export function DateTimeField({
   return (
     <div ref={containerRef} className={`relative ${className ?? ""}`}>
       <span className={labelClass}>{label}</span>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className={`${inputClass} text-left`}
-        >
-          {date
-            ? date.toLocaleDateString("vi-VN", {
-                weekday: "short",
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
-            : "Chọn ngày"}
-        </button>
-        <input
-          type="time"
-          value={timeValue}
-          onChange={(e) => commitTime(e.target.value)}
-          className={`${inputClass} w-28 shrink-0`}
-        />
-        {clearable && date && (
+      {showTime ? (
+        // Date on its own row, time + "Xoá" on a second — a native
+        // `<input type="time">` refuses to shrink below its own built-in
+        // minimum width (locale-dependent, often 100px+) no matter what
+        // width class it's given, so trying to fit it alongside the date
+        // button and a clear button on one row kept squeezing (or fully
+        // hiding) whichever control lost the fight. Two rows sidesteps that
+        // entirely instead of fighting the browser's own control width.
+        <>
           <button
             type="button"
-            onClick={() => onChange("")}
-            aria-label="Xoá ngày"
-            className="shrink-0 rounded-md border border-line px-2.5 text-ink-soft transition-colors hover:border-ink hover:text-ink"
+            onClick={() => setOpen((o) => !o)}
+            className={`${inputClass} text-left`}
           >
-            ×
+            {date
+              ? date.toLocaleDateString("vi-VN", {
+                  weekday: "short",
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+              : "Chọn ngày"}
           </button>
-        )}
-      </div>
-
-      {open && (
-        <div className="absolute z-30 mt-1 rounded-md border border-line bg-ivory p-2 shadow-lg">
-          <DayPicker
-            mode="single"
-            selected={date ?? undefined}
-            // Without this, DayPicker opens on *today's* month regardless
-            // of what's already selected — for a wedding date months away
-            // from today, that meant scrolling several months just to see
-            // the picked day highlighted.
-            defaultMonth={date ?? undefined}
-            onSelect={(day) => {
-              if (!day) return;
-              commitDay(day);
-              setOpen(false);
-            }}
-            locale={vi}
-            classNames={rdpStyles}
-            showOutsideDays
-            // DayPicker's own stylesheet sets --rdp-accent-color etc.
-            // directly on its root element (`.rdp-root { --rdp-accent-
-            // color: blue; ... }`), which wins over the same variables set
-            // on an ANCESTOR — an inherited custom property always loses
-            // to any explicit declaration on the element itself, no matter
-            // how it's set. `style` here targets that root element
-            // directly, so it actually overrides the default blue.
-            style={
-              {
-                "--rdp-accent-color": "var(--color-accent)",
-                "--rdp-accent-background-color": "var(--color-accent-soft)",
-                "--rdp-today-color": "var(--color-accent)",
-              } as CSSProperties
-            }
-          />
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <input
+              type="time"
+              value={timeValue}
+              onChange={(e) => commitTime(e.target.value)}
+              className={`${inputClass} w-fit`}
+            />
+            {clearable && date && (
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                title="Xoá ngày, để trống = không giới hạn"
+                className="shrink-0 whitespace-nowrap rounded-md border border-line px-3 py-2.5 text-xs text-ink-soft transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+              >
+                Xoá
+              </button>
+            )}
+          </div>
+        </>
+      ) : (
+        // No time picker to fight for room with — date button and "Xoá"
+        // comfortably share one row.
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            className={`${inputClass} min-w-0 flex-1 truncate text-left`}
+          >
+            {date
+              ? date.toLocaleDateString("vi-VN", {
+                  weekday: "short",
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+              : "Chọn ngày"}
+          </button>
+          {clearable && date && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              title="Xoá ngày, để trống = không giới hạn"
+              className="shrink-0 whitespace-nowrap rounded-md border border-line px-3 py-2.5 text-xs text-ink-soft transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+            >
+              Xoá
+            </button>
+          )}
         </div>
       )}
+
+      {open &&
+        popoverPos &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            className="fixed z-50 rounded-md border border-line bg-ivory p-2 shadow-lg"
+            style={{ top: popoverPos.top, left: popoverPos.left }}
+          >
+            <DayPicker
+              mode="single"
+              selected={date ?? undefined}
+              // Without this, DayPicker opens on *today's* month regardless
+              // of what's already selected — for a wedding date months away
+              // from today, that meant scrolling several months just to see
+              // the picked day highlighted.
+              defaultMonth={date ?? undefined}
+              onSelect={(day) => {
+                if (!day) return;
+                commitDay(day);
+                setOpen(false);
+              }}
+              locale={vi}
+              classNames={rdpStyles}
+              showOutsideDays
+              // DayPicker's own stylesheet sets --rdp-accent-color etc.
+              // directly on its root element (`.rdp-root { --rdp-accent-
+              // color: blue; ... }`), which wins over the same variables set
+              // on an ANCESTOR — an inherited custom property always loses
+              // to any explicit declaration on the element itself, no matter
+              // how it's set. `style` here targets that root element
+              // directly, so it actually overrides the default blue.
+              style={
+                {
+                  "--rdp-accent-color": "var(--color-accent)",
+                  "--rdp-accent-background-color": "var(--color-accent-soft)",
+                  "--rdp-today-color": "var(--color-accent)",
+                } as CSSProperties
+              }
+            />
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

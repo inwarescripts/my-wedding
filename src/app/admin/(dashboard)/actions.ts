@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireSession, requireProjectAccess, requireAdmin } from "@/lib/authz";
+import { requireProjectAccess, requireAdmin } from "@/lib/authz";
 import { copyObject, deleteObject } from "@/lib/s3";
 import { slugify } from "@/lib/slugify";
 import { RSVP_PAGE_SIZE, type RsvpEntryItem } from "./rsvp-types";
@@ -35,7 +35,7 @@ function remapUrlsDeep<T>(value: T, urlMap: Map<string, string>): T {
 }
 
 export async function createProject(formData: FormData) {
-  const session = await requireSession();
+  const session = await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   if (!name) throw new Error("Tên dự án không được để trống");
 
@@ -78,6 +78,15 @@ export async function createProject(formData: FormData) {
 
   revalidatePath("/admin");
   redirect(`/admin/projects/${project.id}/editor`);
+}
+
+/** Admin-only: toggles whether this project appears as a template card on
+ * the public "/" homepage gallery (see getPublishedProjectsGallery). */
+export async function setShowOnHomepage(projectId: string, showOnHomepage: boolean) {
+  await requireAdmin();
+  await prisma.project.update({ where: { id: projectId }, data: { showOnHomepage } });
+  revalidatePath("/admin");
+  revalidatePath("/");
 }
 
 export async function deleteProject(projectId: string) {
@@ -274,4 +283,25 @@ export async function getRsvpEntriesPage(projectId: string, page: number) {
     })) satisfies RsvpEntryItem[],
     total,
   };
+}
+
+/** Every RSVP reply for a project, unpaginated — for the "Download CSV"
+ * button, which needs the full list in one shot rather than page by page. */
+export async function getAllRsvpEntries(projectId: string): Promise<RsvpEntryItem[]> {
+  await requireProjectAccess(projectId);
+
+  const entries = await prisma.rsvpEntry.findMany({
+    where: { projectId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return entries.map((e) => ({
+    id: e.id,
+    name: e.name,
+    phone: e.phone,
+    attending: e.attending,
+    guestCount: e.guestCount,
+    message: e.message,
+    createdAt: e.createdAt.toISOString(),
+  }));
 }

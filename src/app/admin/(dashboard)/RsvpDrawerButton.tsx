@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type MouseEvent } from "react";
 import { Drawer } from "@/components/ui/Drawer";
-import { getRsvpEntriesPage } from "./actions";
+import { getAllRsvpEntries, getRsvpEntriesPage } from "./actions";
 import { RSVP_PAGE_SIZE, type RsvpEntryItem } from "./rsvp-types";
 
 function formatDate(iso: string) {
@@ -11,6 +11,41 @@ function formatDate(iso: string) {
     month: "2-digit",
     year: "numeric",
   });
+}
+
+// Quotes any field containing a comma, quote, or newline, doubling internal
+// quotes — standard CSV escaping (RFC 4180).
+function csvField(value: string | number): string {
+  const s = String(value);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function entriesToCsv(entries: RsvpEntryItem[]): string {
+  const header = ["Họ và tên", "Số điện thoại", "Tham dự", "Số khách", "Lời nhắn", "Thời gian gửi"];
+  const rows = entries.map((e) => [
+    csvField(e.name),
+    csvField(e.phone ?? ""),
+    csvField(e.attending === "yes" ? "Tham dự" : "Không tham dự"),
+    csvField(e.guestCount),
+    csvField(e.message ?? ""),
+    csvField(formatDate(e.createdAt)),
+  ]);
+  // Leading BOM so Excel (which guesses encoding from raw bytes, not the
+  // Blob's declared charset) renders Vietnamese diacritics correctly
+  // instead of mojibake.
+  return "﻿" + [header, ...rows].map((r) => r.join(",")).join("\r\n");
+}
+
+function downloadCsv(filename: string, content: string) {
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 export function RsvpDrawerButton({
@@ -26,6 +61,7 @@ export function RsvpDrawerButton({
   const [entries, setEntries] = useState<RsvpEntryItem[]>([]);
   const [total, setTotal] = useState(0);
   const [isPending, startTransition] = useTransition();
+  const [exporting, setExporting] = useState(false);
 
   function load(nextPage: number) {
     startTransition(async () => {
@@ -35,6 +71,16 @@ export function RsvpDrawerButton({
       setPage(nextPage);
       setLoaded(true);
     });
+  }
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const all = await getAllRsvpEntries(projectId);
+      downloadCsv(`rsvp-${projectLabel}-${new Date().toISOString().slice(0, 10)}.csv`, entriesToCsv(all));
+    } finally {
+      setExporting(false);
+    }
   }
 
   function handleOpen(e: MouseEvent) {
@@ -57,6 +103,17 @@ export function RsvpDrawerButton({
       </button>
 
       <Drawer open={open} onClose={() => setOpen(false)} title={`RSVP — ${projectLabel}`}>
+        {loaded && total > 0 && (
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting}
+            className="mb-4 w-full border border-line bg-line/40 px-3 py-2 text-xs uppercase tracking-widest text-ink-soft transition-colors hover:border-ink hover:bg-line/60 hover:text-ink disabled:opacity-50"
+          >
+            {exporting ? "Đang tải xuống..." : "Tải xuống CSV"}
+          </button>
+        )}
+
         {isPending && entries.length === 0 && (
           <p className="text-sm text-ink-soft">Đang tải...</p>
         )}

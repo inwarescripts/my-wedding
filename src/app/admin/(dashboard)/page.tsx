@@ -5,6 +5,7 @@ import { DeleteProjectButton } from "./DeleteProjectButton";
 import { CloneProjectButton } from "./CloneProjectButton";
 import { AssignProjectButton } from "./AssignProjectButton";
 import { RsvpDrawerButton } from "./RsvpDrawerButton";
+import { ShowOnHomepageToggle } from "./ShowOnHomepageToggle";
 import Link from "next/link";
 
 export default async function AdminHomePage() {
@@ -29,28 +30,35 @@ export default async function AdminHomePage() {
           </p>
         </div>
 
-        <form action={createProject} className="flex items-center gap-2">
-          <input
-            name="name"
-            required
-            placeholder="Tên dự án (VD: Minh & Linh)"
-            className="border-0 border-b border-line bg-transparent px-1 py-2 font-serif text-sm text-ink focus:border-accent focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="whitespace-nowrap border border-ink bg-ink px-5 py-2.5 text-xs uppercase tracking-widest text-ivory transition-opacity hover:opacity-85"
-          >
-            + Tạo dự án
-          </button>
-        </form>
+        {isAdmin && (
+          <form action={createProject} className="flex items-center gap-2">
+            <input
+              name="name"
+              required
+              placeholder="Tên dự án (VD: Minh & Linh)"
+              className="border-0 border-b border-line bg-transparent px-1 py-2 font-serif text-sm text-ink focus:border-accent focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="whitespace-nowrap border border-ink bg-ink px-5 py-2.5 text-xs uppercase tracking-widest text-ivory transition-opacity hover:opacity-85"
+            >
+              + Tạo dự án
+            </button>
+          </form>
+        )}
       </div>
 
       <div className="mt-8 grid gap-4">
         {projects.map((p) => (
           <div
             key={p.id}
-            className="card-flat flex items-center justify-between gap-4 px-6 py-5"
+            className="card-flat relative flex items-center justify-between gap-4 px-6 pb-5 pt-9"
           >
+            {isAdmin && (
+              <div className="absolute right-4 top-3">
+                <ShowOnHomepageToggle projectId={p.id} initialValue={p.showOnHomepage} />
+              </div>
+            )}
             <Link
               href={`/admin/projects/${p.id}/editor`}
               className="flex-1 transition-colors hover:text-accent"

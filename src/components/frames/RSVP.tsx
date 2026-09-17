@@ -156,6 +156,75 @@ function RsvpModal({
   return createPortal(modalContent, document.body);
 }
 
+// Shared, no-decoration intro for the two newer variants below — neither
+// uses the floating rose bouquet, which the same fixed image on every
+// variant made feel repetitive/dated.
+function RsvpIntroPlain() {
+  return (
+    <>
+      <Eyebrow>Xác nhận tham dự</Eyebrow>
+      <Divider />
+      <p className="mx-auto max-w-md font-serif text-lg text-ink-soft">
+        Sự hiện diện của bạn là món quà quý giá nhất với chúng tôi
+      </p>
+    </>
+  );
+}
+
+/** Minimalist — no bouquet, no ornament, just a clean bordered card around
+ * the form. Reads as a modern, understated invitation rather than a
+ * florid one. */
+function ElegantRsvp({ projectId, content }: { projectId: string; content: RsvpContent }) {
+  return (
+    <Section className="text-center">
+      <RsvpIntroPlain />
+      <Reveal
+        preset="fadeUp"
+        className="mx-auto mt-10 max-w-md border border-line px-8 py-10 text-left"
+      >
+        <RsvpForm projectId={projectId} content={content} />
+      </Reveal>
+    </Section>
+  );
+}
+
+/** Real flower photos framing opposite corners of the form card — same
+ * asset pair and technique as the Story/Family sections' "floral photo"
+ * treatments, instead of one fixed bouncing rose PNG. */
+function FloralRsvp({ projectId, content }: { projectId: string; content: RsvpContent }) {
+  return (
+    <Section className="text-center">
+      <RsvpIntroPlain />
+      <div className="relative mx-auto mt-10 max-w-md">
+        <div className="pointer-events-none absolute -right-10 -top-10 z-10 h-32 w-32 sm:-right-12 sm:-top-12 sm:h-40 sm:w-40">
+          <Image
+            src="/flower1-decoration.webp"
+            alt=""
+            fill
+            sizes="160px"
+            className="object-contain drop-shadow-[0_8px_16px_rgba(43,38,33,0.18)]"
+          />
+        </div>
+        <div className="pointer-events-none absolute -bottom-10 -left-10 z-10 h-36 w-36 sm:-bottom-12 sm:-left-12 sm:h-44 sm:w-44">
+          <Image
+            src="/flower3-decoration.webp"
+            alt=""
+            fill
+            sizes="180px"
+            className="object-contain drop-shadow-[0_8px_16px_rgba(43,38,33,0.18)]"
+          />
+        </div>
+        <Reveal
+          preset="fadeUp"
+          className="relative border border-accent-soft/70 bg-ivory px-8 py-10 text-left"
+        >
+          <RsvpForm projectId={projectId} content={content} />
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
+
 function RsvpIntro({ bowStyle }: { bowStyle: string }) {
   return (
     <>
@@ -204,6 +273,14 @@ export function RSVP({
   variant?: string;
 }) {
   const [open, setOpen] = useState(false);
+
+  if (variant === "elegant") {
+    return <ElegantRsvp projectId={projectId} content={content} />;
+  }
+
+  if (variant === "floral") {
+    return <FloralRsvp projectId={projectId} content={content} />;
+  }
 
   if (variant === "modal") {
     return (

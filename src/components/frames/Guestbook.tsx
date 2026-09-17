@@ -73,30 +73,56 @@ export function Guestbook({
         </div>
       </Reveal>
 
-      <Stagger className="mx-auto mt-14 grid max-w-4xl gap-x-6 gap-y-10 text-left sm:grid-cols-2">
-        {seed.map((m, i) => (
-          <StaggerItem
-            key={m.id}
-            className={`card-flat relative px-6 pb-6 pt-9 transition-transform duration-300 hover:rotate-0 hover:shadow-md ${TILTS[i % TILTS.length]}`}
-          >
-            <span
-              aria-hidden
-              className="pointer-events-none absolute left-3 top-0 font-script text-7xl leading-none text-accent-soft/70"
+      {/* A long-running guestbook can accumulate far more approved messages
+          than comfortably fit on one screen — scrolling this block (instead
+          of letting the section grow unbounded) keeps the rest of the page
+          reachable. max-h only kicks in once content actually overflows it,
+          so short lists render exactly as before. */}
+      <div className="guestbook-scroll mx-auto mt-14 max-h-[640px] max-w-4xl overflow-y-auto px-1 pb-2 pt-1 sm:px-2">
+        <Stagger className="grid gap-x-6 gap-y-10 text-left sm:grid-cols-2">
+          {seed.map((m, i) => (
+            <StaggerItem
+              key={m.id}
+              className={`card-flat relative px-6 pb-6 pt-9 transition-transform duration-300 hover:rotate-0 hover:shadow-md ${TILTS[i % TILTS.length]}`}
             >
-              “
-            </span>
-            <div className="relative flex items-start gap-3">
-              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-accent-soft/25 font-heading text-sm text-accent">
-                {m.name.trim().charAt(0).toUpperCase() || "?"}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-3 top-0 font-script text-7xl leading-none text-accent-soft/70"
+              >
+                “
               </span>
-              <div>
-                <p className="font-heading italic text-ink">{m.name}</p>
-                <p className="mt-1 font-serif text-ink-soft">{m.message}</p>
+              <div className="relative flex items-start gap-3">
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-accent-soft/25 font-heading text-sm text-accent">
+                  {m.name.trim().charAt(0).toUpperCase() || "?"}
+                </span>
+                <div>
+                  <p className="font-heading italic text-ink">{m.name}</p>
+                  <p className="mt-1 font-serif text-ink-soft">{m.message}</p>
+                </div>
               </div>
-            </div>
-          </StaggerItem>
-        ))}
-      </Stagger>
+            </StaggerItem>
+          ))}
+        </Stagger>
+      </div>
+      {/* Always a thin scrollbar, not shown/hidden on hover — the toggle
+          made the track visibly pop in and out as the cursor crossed the
+          list, which read as jumpy/distracting rather than helpful. */}
+      <style>{`
+        .guestbook-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: var(--color-accent-soft) transparent;
+        }
+        .guestbook-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .guestbook-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .guestbook-scroll::-webkit-scrollbar-thumb {
+          background: var(--color-accent-soft);
+          border-radius: 9999px;
+        }
+      `}</style>
     </Section>
   );
 }
