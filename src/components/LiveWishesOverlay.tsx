@@ -37,7 +37,7 @@ const INTERVAL_MS = 3400;
 // viewport — required for it to stay visible through the whole scroll).
 const POSITION_CLASS: Record<string, string> = {
   default:
-    "absolute bottom-44 left-0 z-10 h-48 w-[62%] max-w-sm md:bottom-56 md:left-6 md:h-64 md:w-96",
+    "absolute bottom-44 left-0 z-90 h-48 w-[62%] max-w-sm md:bottom-56 md:left-6 md:h-64 md:w-96",
   // left-3/right-3 are just the pre-measurement fallback (and what mobile
   // settles on anyway, see EDGE_INSET below) — the real alignment comes
   // from the measured inline style once mounted.
