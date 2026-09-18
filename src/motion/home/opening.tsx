@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
+import Image from "@/components/AppImage";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CoupleInfo } from "@/types/wedding-config";
 import { isVideoUrl } from "@/lib/media";
@@ -786,7 +786,7 @@ export function Opening({
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-ink"
+        className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden bg-ink"
         initial={{ opacity: 1 }}
         animate={entering ? { opacity: 0 } : { opacity: 1 }}
         transition={{ duration: 1.5, ease: [0.65, 0, 0.35, 1] }}

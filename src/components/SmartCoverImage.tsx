@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type SyntheticEvent } from "react";
-import Image from "next/image";
+import Image from "@/components/AppImage";
 
 /**
  * A full-bleed cover photo that only crops when it's actually safe to.

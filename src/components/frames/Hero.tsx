@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/AppImage";
 import type { CoupleInfo } from "@/types/wedding-config";
 import { useParallax } from "@/motion/useParallax";
 import { AnimatedHeading } from "@/motion/registry/typography";

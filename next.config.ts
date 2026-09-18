@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // Optimization stays on (serving every image raw was a real lag
+    // regression). Vercel's Image Optimization has a hard monthly quota on
+    // the Hobby plan, though — if it's ever exceeded again, AppImage (see
+    // src/components/AppImage.tsx) falls back to the raw source per-image
+    // on load failure instead of every <Image> on the site breaking at once.
     remotePatterns: [
       {
         protocol: "https",

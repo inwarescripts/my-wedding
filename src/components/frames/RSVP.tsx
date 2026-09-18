@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import Image from "next/image";
+import Image from "@/components/AppImage";
 import { AnimatePresence, motion } from "framer-motion";
 import type { RsvpContent } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";

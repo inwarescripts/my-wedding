@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
+import Image from "@/components/AppImage";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PhotoStackContent } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";

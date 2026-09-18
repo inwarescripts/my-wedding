@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/AppImage";
 import type { StoryContent } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";

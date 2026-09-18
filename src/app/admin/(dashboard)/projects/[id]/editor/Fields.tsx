@@ -54,12 +54,14 @@ export function TextField({
   onChange,
   type = "text",
   className,
+  placeholder,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
   className?: string;
+  placeholder?: string;
 }) {
   return (
     <Field label={label} className={className}>
@@ -67,6 +69,7 @@ export function TextField({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
         className={inputClass}
       />
     </Field>

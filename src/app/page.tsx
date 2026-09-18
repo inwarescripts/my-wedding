@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/AppImage";
 import { getPublishedProjectsGallery } from "@/lib/wedding-config";
 import { openingRegistry, type OpeningVariant } from "@/motion/registry/opening-labels";
 import { Reveal, Stagger, StaggerItem } from "@/motion/Reveal";

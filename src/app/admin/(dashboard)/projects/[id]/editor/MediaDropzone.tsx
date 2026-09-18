@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/AppImage";
 import { useDropzone } from "react-dropzone";
 import {
   DndContext,
@@ -21,6 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { requestAssetUpload, confirmAssetUploaded, deleteAssetByUrl } from "@/app/admin/actions/media";
 import { mediaKindOf } from "@/lib/media";
 import { sniffFileKind, type SniffedKind } from "@/lib/sniffFileKind";
+import { resizeImageForUpload } from "@/lib/resizeImage";
 
 const DEFAULT_ACCEPT: Record<string, string[]> = {
   "image/jpeg": [".jpg", ".jpeg"],
@@ -110,15 +111,16 @@ export function MediaDropzone({
       }
 
       try {
+        const uploadFile = sniffed === "image" ? await resizeImageForUpload(file) : file;
         const { assetId, signedUrl, fileUrl, contentType } = await requestAssetUpload(
           projectId,
-          file.name
+          uploadFile.name
         );
 
         const res = await fetch(signedUrl, {
           method: "PUT",
           headers: { "Content-Type": contentType },
-          body: file,
+          body: uploadFile,
         });
         if (!res.ok) throw new Error("UPLOAD_FAILED");
 

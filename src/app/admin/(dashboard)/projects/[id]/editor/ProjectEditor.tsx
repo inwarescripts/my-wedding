@@ -1457,6 +1457,12 @@ function FamilySection({
 }) {
   return (
     <div className="space-y-5">
+      <TextField
+        label="Dòng thông báo"
+        value={content.announcementLine ?? ""}
+        onChange={(v) => onChange({ ...content, announcementLine: v })}
+        placeholder="Lễ thành hôn của con chúng tôi"
+      />
       <Field label="Giờ/địa điểm hiển thị">
         <select
           value={content.eventId ?? ""}

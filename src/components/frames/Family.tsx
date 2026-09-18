@@ -1,9 +1,11 @@
-import Image from "next/image";
+import Image from "@/components/AppImage";
 import type { CoupleInfo, EventItem, FamilyContent, FamilySide } from "@/types/wedding-config";
 import { Section, Eyebrow, Divider } from "@/components/ui/Section";
 import { Reveal } from "@/motion/Reveal";
 import { FloralOrnament, LeafyCorner, BalloonCluster, DaisyCluster } from "@/motion/registry/family";
 import { MapModalButton } from "@/components/MapModalButton";
+
+const DEFAULT_ANNOUNCEMENT_LINE = "Lễ thành hôn của con chúng tôi";
 
 /** "09h00" style, matching the "Xh00" time notation already used on the
  * traditional printed-invitation reference. Always derived from
@@ -101,7 +103,7 @@ function AnnouncementBody({
 
       <p className="text-xs uppercase tracking-[0.35em] text-accent">Trân trọng báo tin</p>
       <p className="mt-1 font-serif text-sm uppercase tracking-widest text-ink-soft">
-        Lễ thành hôn của con chúng tôi
+        {content.announcementLine || DEFAULT_ANNOUNCEMENT_LINE}
       </p>
 
       <p className="mt-6 font-heading text-3xl italic text-ink md:text-4xl">

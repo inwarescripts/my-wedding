@@ -88,6 +88,9 @@ export interface FamilyContent {
    * an id from the project's `events` list. Left unset (or pointing at an
    * event that's since been deleted), it falls back to the first event. */
   eventId?: string;
+  /** The line under "Trân trọng báo tin" — defaults to "Lễ thành hôn của
+   * con chúng tôi" when unset. */
+  announcementLine?: string;
 }
 
 export interface MapContent {
