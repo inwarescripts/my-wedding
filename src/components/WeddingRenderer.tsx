@@ -33,9 +33,13 @@ const BURST_WAIT_FRACTION = 0.55;
 export function WeddingRenderer({
   config,
   initialEntered = false,
+  eagerMount = false,
 }: {
   config: WeddingConfig;
   initialEntered?: boolean;
+  // Skips LazyMount for every section — the admin editor's preview needs
+  // real heights up front so focusPreview()'s scroll-to lands correctly.
+  eagerMount?: boolean;
 }) {
   const [entered, setEntered] = useState(initialEntered);
   const [burstKey, setBurstKey] = useState<number | null>(null);
@@ -149,7 +153,7 @@ export function WeddingRenderer({
             <div key={frame.id} id={`frame-${frame.id}`}>
               {/* First section (hero) renders immediately — everything
                   after is lazy-mounted (see LazyMount). */}
-              {i === 0 ? section : <LazyMount>{section}</LazyMount>}
+              {i === 0 || eagerMount ? section : <LazyMount>{section}</LazyMount>}
             </div>
           );
         })}

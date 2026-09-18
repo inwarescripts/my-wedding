@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { WeddingRenderer } from "@/components/WeddingRenderer";
 import { getPublishedWeddingConfigBySlug } from "@/lib/wedding-config";
 import { getDemoUrl } from "@/lib/site";
+import type { MapContent } from "@/types/wedding-config";
 
 export async function generateMetadata({
   params,
@@ -56,7 +57,24 @@ export default async function WeddingPage({
 
   if (!config) notFound();
 
+  // Prefer the "Chỉ đường" map frame (real lat/lng, the public guest-facing
+  // venue) over config.events[0], which may just be a private "Lễ Vu Quy".
+  const mapFrame = config.frames.find((f) => f.type === "map" && f.enabled);
+  const mapContent = mapFrame?.content as MapContent | undefined;
   const firstEvent = config.events[0];
+  const location = mapContent
+    ? {
+        "@type": "Place",
+        name: mapContent.venue,
+        address: mapContent.address || undefined,
+        geo:
+          mapContent.lat && mapContent.lng
+            ? { "@type": "GeoCoordinates", latitude: mapContent.lat, longitude: mapContent.lng }
+            : undefined,
+      }
+    : firstEvent
+      ? { "@type": "Place", name: firstEvent.venue, address: firstEvent.address ?? undefined }
+      : undefined;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Event",
@@ -68,13 +86,7 @@ export default async function WeddingPage({
       config.couple.quote ?? `Thiệp mời cưới online của ${config.couple.displayName}`,
     image: config.couple.coverImage ? [config.couple.coverImage] : undefined,
     url: getDemoUrl(decodedSlug),
-    location: firstEvent
-      ? {
-          "@type": "Place",
-          name: firstEvent.venue,
-          address: firstEvent.address ?? undefined,
-        }
-      : undefined,
+    location,
     performer: [
       { "@type": "Person", name: config.couple.groomName },
       { "@type": "Person", name: config.couple.brideName },

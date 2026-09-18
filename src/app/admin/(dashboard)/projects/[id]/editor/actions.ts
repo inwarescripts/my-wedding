@@ -115,19 +115,35 @@ export async function saveProjectConfig(projectId: string, payload: SaveProjectP
       }
     }
 
-    await tx.event.deleteMany({ where: { projectId } });
-    if (payload.events.length > 0) {
-      await tx.event.createMany({
-        data: payload.events.map((e, i) => ({
-          projectId,
-          name: e.name,
-          date: new Date(e.date),
-          time: e.time,
-          venue: e.venue,
-          address: e.address,
-          order: i,
-        })),
-      });
+    // Upsert by id (same pattern as frames above) rather than delete-all +
+    // createMany — the latter gave every event a fresh cuid() on every
+    // save, breaking any stored reference to a specific event's id (e.g.
+    // Family's "which lễ" picker).
+    const existingEvents = await tx.event.findMany({
+      where: { projectId },
+      select: { id: true },
+    });
+    const keepEventIds = new Set(
+      payload.events.filter((e) => !e.id.startsWith("new-")).map((e) => e.id)
+    );
+    const toDeleteEvents = existingEvents.map((e) => e.id).filter((id) => !keepEventIds.has(id));
+    if (toDeleteEvents.length > 0) {
+      await tx.event.deleteMany({ where: { id: { in: toDeleteEvents } } });
+    }
+    for (const [order, e] of payload.events.entries()) {
+      const data = {
+        name: e.name,
+        date: new Date(e.date),
+        time: e.time,
+        venue: e.venue,
+        address: e.address,
+        order,
+      };
+      if (e.id.startsWith("new-")) {
+        await tx.event.create({ data: { ...data, projectId } });
+      } else {
+        await tx.event.update({ where: { id: e.id }, data });
+      }
     }
 
     await tx.giftAccount.deleteMany({ where: { projectId } });

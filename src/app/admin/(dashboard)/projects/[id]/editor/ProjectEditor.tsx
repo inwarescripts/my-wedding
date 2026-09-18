@@ -1265,7 +1265,7 @@ export function ProjectEditor({
           ref={previewRef}
           className="min-h-0 overflow-y-auto border border-line bg-ivory shadow-flat"
         >
-          <WeddingRenderer config={config} initialEntered />
+          <WeddingRenderer config={config} initialEntered eagerMount />
         </div>
       </div>
     </div>
