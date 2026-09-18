@@ -84,6 +84,10 @@ export interface FamilySide {
 export interface FamilyContent {
   groom: FamilySide;
   bride: FamilySide;
+  /** Which event's time/venue/address to print under the announcement —
+   * an id from the project's `events` list. Left unset (or pointing at an
+   * event that's since been deleted), it falls back to the first event. */
+  eventId?: string;
 }
 
 export interface MapContent {

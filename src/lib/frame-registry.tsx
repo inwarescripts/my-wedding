@@ -70,15 +70,19 @@ export function renderFrame(frame: FrameConfig, ctx: RenderFrameContext) {
       return <GalleryVariant content={frame.content as GalleryContent} variant={frame.variant} />;
     case "timeline":
       return <TimelineVariant content={frame.content as TimelineContent} variant={frame.variant} />;
-    case "family":
+    case "family": {
+      const familyContent = frame.content as FamilyContent;
+      const event =
+        ctx.events.find((e) => e.id === familyContent.eventId) ?? ctx.events[0];
       return (
         <Family
-          content={frame.content as FamilyContent}
+          content={familyContent}
           variant={frame.variant}
           couple={ctx.couple}
-          event={ctx.events[0]}
+          event={event}
         />
       );
+    }
     case "events":
       return <Events events={ctx.events} variant={frame.variant} />;
     case "schedule":

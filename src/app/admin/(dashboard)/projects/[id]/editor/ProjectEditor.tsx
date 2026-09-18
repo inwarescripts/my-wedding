@@ -706,6 +706,7 @@ export function ProjectEditor({
           <>
             <FamilySection
               content={frame.content as FamilyContent}
+              events={config.events}
               onChange={(c) => updateFrameContent(frame.id, c)}
             />
             <div className="pt-2">
@@ -1447,13 +1448,29 @@ function FamilySideFields({
 
 function FamilySection({
   content,
+  events,
   onChange,
 }: {
   content: FamilyContent;
+  events: EventItem[];
   onChange: (c: FamilyContent) => void;
 }) {
   return (
     <div className="space-y-5">
+      <Field label="Giờ/địa điểm hiển thị">
+        <select
+          value={content.eventId ?? ""}
+          onChange={(e) => onChange({ ...content, eventId: e.target.value || undefined })}
+          className={inputClass}
+        >
+          <option value="">Mặc định (lễ đầu tiên trong Lịch trình)</option>
+          {events.map((event) => (
+            <option key={event.id} value={event.id}>
+              {event.name || event.venue || "(chưa đặt tên)"}
+            </option>
+          ))}
+        </select>
+      </Field>
       <div className="space-y-2">
         <p className={labelClass}>Nhà trai</p>
         <FamilySideFields side={content.groom} onChange={(groom) => onChange({ ...content, groom })} />
